@@ -26,11 +26,17 @@ async function apiRequest<T>(
     if (!response.ok) {
       // Handle different HTTP status codes
       if (response.status === 401) {
-        // Clear auth data and redirect to login
-        const { authHelpers } = await import('@/utils/auth');
-        authHelpers.clearAuth();
-        window.location.href = '/auth/login';
-        throw new Error('Unauthorized - Please login again');
+        // Only redirect for protected requests
+        if (requireAuth) {
+          const { authHelpers } = await import('@/utils/auth');
+          authHelpers.clearAuth();
+          window.location.href = '/auth/login';
+        }
+        // Check if this is a login request for better error message
+        if (endpoint === '/auth/login') {
+          throw new Error('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+        }
+        throw new Error('Yetkisiz - Lütfen tekrar giriş yapın');
       }
       
       if (response.status === 409) {
@@ -49,7 +55,7 @@ async function apiRequest<T>(
         throw new Error('Sunucu hatası - Lütfen daha sonra tekrar deneyin');
       }
       
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP hatası! durum: ${response.status}`);
     }
 
     const result = await response.json();
@@ -286,7 +292,7 @@ export const handleAPIError = (error: any): string => {
   if (error.message) {
     return error.message;
   }
-  return 'An unexpected error occurred';
+  return 'Beklenmeyen bir hata oluştu';
 };
 
 // Export all APIs

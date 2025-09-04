@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Montserrat, Open_Sans } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -41,6 +42,7 @@ export default function RootLayout({
     <html className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${openSans.variable}`} lang="en">
       <body className="antialiased">
         {children}
+        <Toaster />
       </body>
     </html>
   );
