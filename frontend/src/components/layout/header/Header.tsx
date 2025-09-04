@@ -17,17 +17,17 @@ import {
 import { useRouter } from "next/navigation";
 import { userManager, authHelpers } from "@/utils/auth";
 import { useLogout } from "@/hooks/useAuth";
+import { useAuthStore } from "@/app/store/authStore";
 
 function Header() {
   const router = useRouter();
   const { mutate: logout } = useLogout();
   const [isClient, setIsClient] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
+  const { isLoggedIn, user } = useAuthStore();
 
   useEffect(() => {
     setIsClient(true);
-    const user = userManager.getUser();
-    setUserName(user?.name ?? null);
+    // No-op: store already hydrates from localStorage on client
   }, []);
 
   const handleLogout = async () => {
@@ -36,8 +36,7 @@ function Header() {
     } catch (e) {
       // ignore API error, proceed to clear local state
     } finally {
-      authHelpers.clearAuth();
-      setUserName(null);
+      // State is cleared via authStore in useLogout
       router.push("/");
     }
   };
@@ -78,18 +77,22 @@ function Header() {
         {/* Navbar Links */}
         <nav>
           <div className="flex flex-row items-center gap-1">
-            {/* Common icons remain */}
-            <Link href="/">
-              <Button variant="ghost" className="cursor-pointer">
-                <Heart className="w-6 h-6 text-[#486284]" />
-              </Button>
-            </Link>
+            {/* Favorites and Notifications: show only when logged in */}
+            {isClient && isLoggedIn && (
+              <>
+                <Link href="/">
+                  <Button variant="ghost" className="cursor-pointer">
+                    <Heart className="w-6 h-6 text-[#486284]" />
+                  </Button>
+                </Link>
 
-            <Link href="/">
-              <Button variant="ghost" className="cursor-pointer">
-                <BellDot className="w-6 h-6 text-[#486284]" />
-              </Button>
-            </Link>
+                <Link href="/">
+                  <Button variant="ghost" className="cursor-pointer">
+                    <BellDot className="w-6 h-6 text-[#486284]" />
+                  </Button>
+                </Link>
+              </>
+            )}
 
             <Link href="/">
               <Button variant="ghost" className="cursor-pointer">
@@ -107,19 +110,19 @@ function Header() {
             </Link>
 
             {/* Auth area */}
-            {isClient && authHelpers.isLoggedIn() && userName ? (
+            {isClient && isLoggedIn && (user?.name ?? null) ? (
               <div className="flex items-center gap-3 ml-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 cursor-pointer">
                       <Image
                         src="/images/user-image.png"
                         width={35}
                         height={35}
                         alt="user"
-                        className="cursor-pointer rounded-full"
+                        className="rounded-full"
                       />
-                      <span className="text-sm font-medium text-[#486284]">{userName}</span>
+                      <span className="text-sm font-medium text-[#486284]">{user?.name}</span>
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
