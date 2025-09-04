@@ -33,7 +33,7 @@ export default function ChatWindow({ onClose, chat }: ChatWindowProps) {
       
       {/* 💬 Chat Messages - Real-time mesaj listesi */}
       <ChatMessages 
-        messages={chat.messages}
+        messages={chat.messages || []}
         currentUser={chat.currentUser}
         isLoading={chat.chatState.isLoading}
         error={chat.chatState.error}

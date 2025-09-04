@@ -39,14 +39,12 @@ export default function ChatHeader({
           {/* 📊 Title */}
           <span className="font-medium text-lg">Canlı Destek</span>
           
-          {/* 🔌 Connection status */}
-          <div className="flex items-center gap-1 text-sm">
-            <StatusIcon className={`w-3 h-3 ${color} ${isConnecting ? 'animate-spin' : ''}`} />
-            <span className={color}>{text}</span>
-            {currentChatId && isConnected && (
-              <span className="text-muted-foreground">• Chat #{currentChatId}</span>
-            )}
-          </div>
+          {/* 📞 Chat info - sadece chat ID'si varsa göster */}
+          {currentChatId && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <span>Chat #{currentChatId}</span>
+            </div>
+          )}
         </div>
       </div>
 

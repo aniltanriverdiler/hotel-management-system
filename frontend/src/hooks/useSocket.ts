@@ -123,8 +123,8 @@ export const useSocket = (autoConnect: boolean = true) => {
    * Bağlantı koptuğunda belirli süre sonra tekrar dener
    */
   const attemptReconnection = useCallback(() => {
-    const maxAttempts = 5;
-    const baseDelay = 1000; // 1 saniye
+    const maxAttempts = 3; // Daha az deneme
+    const baseDelay = 3000; // 3 saniye başlangıç
     
     if (reconnectAttempts >= maxAttempts) {
       console.warn('⚠️ Maksimum reconnection denemesi aşıldı');
@@ -136,7 +136,7 @@ export const useSocket = (autoConnect: boolean = true) => {
       return;
     }
     
-    // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+    // Exponential backoff: 3s, 6s, 12s
     const delay = baseDelay * Math.pow(2, reconnectAttempts);
     
     console.log(`🔄 ${delay}ms sonra reconnection deneniyor... (${reconnectAttempts + 1}/${maxAttempts})`);
@@ -212,6 +212,18 @@ export const useSocket = (autoConnect: boolean = true) => {
       socketService.disconnect();
     };
   }, [autoConnect, connect]);
+
+  // socketService ile state senkronizasyonu - sadece başlangıçta
+  useEffect(() => {
+    const serviceConnected = socketService.getConnectionStatus();
+    if (serviceConnected && connectionStatus !== 'connected') {
+      console.log('🔄 useSocket: socketService ile senkronize ediliyor -> connected');
+      setConnectionStatus('connected');
+      setError(null);
+      setLastConnectedAt(new Date());
+    }
+    // Periyodik kontrol kaldırıldı - event listener'lar yeterli
+  }, []); // Sadece mount'ta bir kez çalış
   
   // ===============================================
   // 🔍 COMPUTED VALUES (Türetilmiş değerler)

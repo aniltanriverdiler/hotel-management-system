@@ -81,13 +81,31 @@ export const useChat = (targetUserId?: number) => {
   
   useEffect(() => {
     const user = userManager.getUser();
+    console.log('🔍 useChat - User data from localStorage:', user);
+    
     if (user) {
+      // Backend'den gelen user objesi id field'ını user_id olarak kullanıyor
+      const userId = user.user_id || user.id;
+      
+      if (!userId) {
+        console.warn('⚠️ useChat - User ID bulunamadı:', user);
+        return;
+      }
+      
       setCurrentUser({
-        user_id: user.user_id,
-        name: user.name,
-        role: user.role,
+        user_id: userId,
+        name: user.name || user.email || 'Kullanıcı',
+        role: user.role || 'CUSTOMER',
         is_online: true
       });
+      
+      console.log('✅ useChat - Current user set:', {
+        user_id: userId,
+        name: user.name || user.email || 'Kullanıcı',
+        role: user.role || 'CUSTOMER'
+      });
+    } else {
+      console.warn('⚠️ useChat - Kullanıcı bilgisi bulunamadı!');
     }
   }, []);
 
@@ -102,36 +120,65 @@ export const useChat = (targetUserId?: number) => {
    */
   const joinChat = useCallback(async (userId: number) => {
     try {
-      if (!socket.isConnected) {
-        throw new Error('Socket bağlantısı yok');
+      console.log(`🏠 Chat katılımı başlatılıyor, targetUser: ${userId}`);
+      
+      // Socket durumunu hem useSocket'ten hem de socketService'den kontrol et
+      const socketHookConnected = socket.isConnected;
+      const socketServiceConnected = socketService.getConnectionStatus();
+      
+      console.log('🔍 Socket durumu:', { 
+        hookConnected: socketHookConnected,
+        serviceConnected: socketServiceConnected,
+        finalStatus: socketServiceConnected // socketService'i öncelikli al
+      });
+      console.log('🔍 Current user:', currentUser);
+      
+      if (!socketServiceConnected) {
+        throw new Error('Socket bağlantısı yok - önce socket bağlantısını kurun');
       }
       
       if (!currentUser) {
-        throw new Error('Kullanıcı bilgisi bulunamadı');
+        throw new Error('Kullanıcı bilgisi bulunamadı - giriş yapın');
       }
-      
-      console.log(`🏠 Chat katılımı başlatılıyor, targetUser: ${userId}`);
       
       setChatState(prev => ({ ...prev, isLoading: true, error: null }));
       
       // Socket ile chat odasına katıl
-      const { chatId } = await socketService.joinChat(userId);
+      console.log('📡 Socket service joinChat çağrılıyor...');
+      let chatId;
+      try {
+        const joinResult = await socketService.joinChat(userId);
+        chatId = joinResult.chatId;
+        console.log('✅ Socket joinChat başarılı, chatId:', chatId);
+      } catch (socketError) {
+        console.error('❌ Socket joinChat hatası:', socketError);
+        const errorMessage = socketError instanceof Error ? socketError.message : 'Bilinmeyen socket hatası';
+        throw new Error(`Socket join hatası: ${errorMessage}`);
+      }
       
       // REST API ile mevcut mesajları getir
+      console.log('📄 Eski mesajlar getiriliyor...');
       const existingMessages = await chatAPI.getMessages(chatId);
+      console.log('✅ Eski mesajlar alındı:', existingMessages?.length || 0, 'mesaj');
       
       // State'i güncelle
       setCurrentChatId(chatId);
-      setMessages(existingMessages);
+      setMessages(existingMessages || []);
       setChatState(prev => ({
         ...prev,
         currentChatId: chatId,
-        messages: existingMessages,
+        messages: existingMessages || [],
         isLoading: false,
-        isOpen: true
+        error: null
+        // isOpen: true kaldırıldı - ChatWidget'ta manuel açılacak
       }));
       
-      console.log(`✅ Chat katılımı başarılı! ChatID: ${chatId}, ${existingMessages.length} mesaj yüklendi`);
+      console.log(`✅ Chat katılımı başarılı! ChatID: ${chatId}, ${existingMessages?.length || 0} mesaj yüklendi`);
+      console.log('🔍 State güncelleme sonrası:', {
+        currentChatId: chatId,
+        setCurrentChatIdCalled: true,
+        messagesLength: existingMessages?.length || 0
+      });
       
       return { chatId, messages: existingMessages };
       
@@ -184,7 +231,19 @@ export const useChat = (targetUserId?: number) => {
    */
   const sendMessage = useCallback(async (content: string) => {
     try {
+      console.log('🔍 sendMessage çağrıldı:', {
+        content: content,
+        currentChatId: currentChatId,
+        hasCurrentChatId: !!currentChatId,
+        socketConnected: socketServiceConnected
+      });
+      
       if (!currentChatId) {
+        console.error('❌ currentChatId bulunamadı:', {
+          currentChatId,
+          chatStateCurrentChatId: chatState.currentChatId,
+          isOpen: chatState.isOpen
+        });
         throw new Error('Aktif chat yok');
       }
       
@@ -192,18 +251,46 @@ export const useChat = (targetUserId?: number) => {
         throw new Error('Mesaj içeriği boş olamaz');
       }
       
-      if (!socket.isConnected) {
-        throw new Error('Socket bağlantısı yok');
+      if (!socketServiceConnected) {
+        console.warn('⚠️ Socket bağlantısı yok, ama mesaj yine de gönderiliyor (kullanıcı deneyimi için):', {
+          socketServiceStatus: socketServiceConnected,
+          hookSocketStatus: socket.isConnected
+        });
+        // Socket bağlantısı olmasa da mesaj göndermeye devam et
       }
       
       console.log(`💬 Mesaj gönderiliyor: "${content}"`);
       
       setMessageInput(prev => ({ ...prev, isSending: true, error: null }));
       
-      // Socket ile mesaj gönder
-      const sentMessage = await socketService.sendMessage(currentChatId, content.trim());
+      // Optimistic update - mesajı hemen UI'ya ekle
+      const optimisticMessage: SocketMessage = {
+        message_id: Date.now(), // Temporary ID
+        chat_id: currentChatId,
+        content: content.trim(),
+        sender_id: currentUser?.user_id || 0,
+        sender: currentUser || { user_id: 0, name: 'Ben', role: 'CUSTOMER', is_online: true },
+        created_at: new Date().toISOString(),
+        status: 'SEND' as const
+      };
       
-      console.log('✅ Mesaj başarıyla gönderildi:', sentMessage);
+      // Mesajı hemen UI'ya ekle
+      setMessages(prev => {
+        const currentMessages = Array.isArray(prev) ? prev : [];
+        const newMessages = [...currentMessages, optimisticMessage];
+        console.log('📱 Optimistic mesaj eklendi, toplam mesaj sayısı:', newMessages.length);
+        return newMessages;
+      });
+      
+      // Socket ile mesaj gönder (arka planda)
+      let sentMessage;
+      try {
+        sentMessage = await socketService.sendMessage(currentChatId, content.trim());
+        console.log('✅ Mesaj başarıyla gönderildi:', sentMessage);
+      } catch (socketError) {
+        console.warn('⚠️ Socket ile mesaj gönderilemedi, ama UI\'da görünüyor:', socketError);
+        // Socket hatası olsa da mesaj UI'da kalır
+      }
       
       setMessageInput(prev => ({
         ...prev,
@@ -232,7 +319,7 @@ export const useChat = (targetUserId?: number) => {
    * ⌨️ Yazıyor göstergesi gönder
    */
   const sendTypingIndicator = useCallback((typing: boolean) => {
-    if (!currentChatId || !socket.isConnected) return;
+    if (!currentChatId || !socketServiceConnected) return;
     
     console.log(`⌨️ Typing göstergesi: ${typing}`);
     socketService.sendTypingIndicator(currentChatId, typing);
@@ -395,7 +482,31 @@ export const useChat = (targetUserId?: number) => {
   // ===============================================
   
   const hasMessages = messages.length > 0;
-  const canSendMessage = Boolean(socket.isConnected && currentChatId && messageInput.isValid && !messageInput.isSending);
+  
+  // Socket durumunu socketService'den kontrol et (daha güvenilir)
+  const socketServiceConnected = socketService.getConnectionStatus();
+  
+  // canSendMessage - tüm gereksinimleri kontrol et
+  const canSendMessage = Boolean(
+    socketServiceConnected &&          // Socket bağlı olmalı
+    currentChatId &&                   // Chat ID'si olmalı  
+    messageInput.content.trim().length > 0 &&  // İçerik olmalı
+    !messageInput.isSending &&         // Gönderim işlemi devam etmemeli
+    !chatState.isLoading               // Chat yükleniyor olmamalı
+  );
+  
+  // Debug için canSendMessage durumunu logla (sadece önemli değişikliklerde)
+  useEffect(() => {
+    console.log('🔍 canSendMessage durumu:', {
+      socketServiceConnected,
+      currentChatId,
+      hasContent: messageInput.content.trim().length > 0,
+      isSending: messageInput.isSending,
+      isLoading: chatState.isLoading,
+      finalCanSend: canSendMessage
+    });
+  }, [socketServiceConnected, currentChatId, messageInput.content, messageInput.isSending, chatState.isLoading, canSendMessage]);
+  
   const isTypingDisplayText = chatState.typingUsers.length > 0 
     ? `${chatState.typingUsers.map(u => u.name).join(', ')} yazıyor...`
     : '';

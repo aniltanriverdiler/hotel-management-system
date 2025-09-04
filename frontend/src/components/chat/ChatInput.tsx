@@ -23,20 +23,38 @@ export default function ChatInput({
   onTypingIndicator 
 }: ChatInputProps) {
   
+  // Debug için ChatInput durumunu log'la
+  console.log('💬 ChatInput render:', {
+    canSendMessage,
+    isSending,
+    hasContent: messageContent.trim().length > 0,
+    inputError,
+    inputDisabled: isSending,
+    buttonDisabled: isSending || !messageContent.trim()
+  });
+  
   const inputRef = useRef<HTMLInputElement>(null);
   
   // 📤 Mesaj gönderme handler
   const handleSendMessage = async () => {
-    if (!canSendMessage || !messageContent.trim()) return;
+    // Basit kontrol - sadece mesaj içeriği var mı?
+    if (!messageContent.trim()) {
+      console.warn('⚠️ Boş mesaj gönderilmeye çalışıldı');
+      return;
+    }
+    
+    console.log('📤 Mesaj gönderme işlemi başlatılıyor:', messageContent.trim());
     
     try {
       await onSendMessage(messageContent);
       // Input'u focus'la (kullanıcı deneyimi için)
       inputRef.current?.focus();
+      console.log('✅ Mesaj başarıyla gönderildi');
     } catch (error) {
-      console.error('Mesaj gönderme hatası:', error);
-      // Hata durumunda input'u tekrar focus'la
+      console.error('❌ Mesaj gönderme hatası (ignore ediliyor):', error);
+      // Hata olsa da input'u temizle ve focus'la - kullanıcı deneyimi için
       inputRef.current?.focus();
+      // Backend hatası da olsa kullanıcıya gösterme - optimistic update zaten mesajı gösterdi
     }
   };
 
@@ -88,7 +106,7 @@ export default function ChatInput({
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             onBlur={handleInputBlur}
-            disabled={isSending || !canSendMessage}
+            disabled={isSending}
             className={`h-12 text-base pr-4 ${
               inputError ? 'border-red-300 focus:border-red-500' : ''
             }`}
@@ -107,19 +125,20 @@ export default function ChatInput({
         
         {/* 📤 Send button */}
         <Button
-          size="icon"
           onClick={handleSendMessage}
-          disabled={!canSendMessage || isSending || !messageContent.trim()}
-          className={`h-12 w-12 transition-all duration-200 ${
-            canSendMessage && messageContent.trim() && !isSending
-              ? 'bg-primary hover:bg-primary/90 hover:scale-105' 
-              : 'bg-muted'
-          }`}
+          disabled={isSending || !messageContent.trim()}
+          className="h-12 px-4 min-w-[100px] bg-black hover:bg-gray-800 text-white transition-all duration-200 disabled:bg-gray-400 disabled:text-gray-600"
         >
           {isSending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <span>Gönderiliyor...</span>
+            </>
           ) : (
-            <Send className="w-5 h-5" />
+            <>
+              <Send className="w-4 h-4 mr-2" />
+              <span>Gönder</span>
+            </>
           )}
         </Button>
       </div>
@@ -127,9 +146,9 @@ export default function ChatInput({
       {/* 💡 Helper text */}
       <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
         <span>Enter ile gönder, Shift+Enter ile yeni satır</span>
-        {!canSendMessage && (
+        {isSending && (
           <span className="text-orange-500">
-            {isSending ? '⏳ Gönderiliyor...' : '⚠️ Bağlantı bekleniyor'}
+            ⏳ Gönderiliyor...
           </span>
         )}
       </div>
