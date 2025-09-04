@@ -95,16 +95,19 @@ export const useUpdateReview = () =>
 export const useDeleteReview = () => useMutation<number, unknown>(reviewAPI.delete);
 
 // Chat hooks
-export const useUserChats = () => useAPI(() => chatAPI.getUserChats());
-export const useChat = (id: number) => useAPI(() => chatAPI.getById(id), [id]);
-export const useChatMessages = (chatId: number) => useAPI(() => chatAPI.getMessages(chatId), [chatId]);
+export const useStartDirectChat = () => 
+  useMutation<number, unknown>((targetUserId: number) => chatAPI.startDirectChat(targetUserId));
+export const useVerifyParticipation = (chatId: number) => 
+  useAPI(() => chatAPI.verifyParticipation(chatId), [chatId]);
+export const useCounterparts = (chatId: number) => 
+  useAPI(() => chatAPI.getCounterparts(chatId), [chatId]);
+export const useChatMessages = (chatId: number) => 
+  useAPI(() => chatAPI.getMessages(chatId), [chatId]);
 export const useSendMessage = () =>
   useMutation<{ chatId: number; data: Record<string, unknown> }, unknown>(({ chatId, data }) => chatAPI.sendMessage(chatId, data));
 
 // Message hooks
-export const useMessages = () => useAPI(() => messageAPI.getAll());
-export const useMessage = (id: number) => useAPI(() => messageAPI.getById(id), [id]);
-export const useMarkMessageAsRead = () => useMutation<number, unknown>(messageAPI.markAsRead);
+export const useDeleteMessage = () => useMutation<number, unknown>(messageAPI.deleteMessage);
 
 // Image hooks
 export const useHotelImages = (hotelId: number) => useAPI(() => imageAPI.getByHotelId(hotelId), [hotelId]);
@@ -129,13 +132,12 @@ export default {
   useCreateReview,
   useUpdateReview,
   useDeleteReview,
-  useUserChats,
-  useChat,
+  useStartDirectChat,
+  useVerifyParticipation,
+  useCounterparts,
   useChatMessages,
   useSendMessage,
-  useMessages,
-  useMessage,
-  useMarkMessageAsRead,
+  useDeleteMessage,
   useHotelImages,
   useUploadMainImage,
   useUploadGalleryImages,

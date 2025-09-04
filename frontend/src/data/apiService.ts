@@ -223,19 +223,28 @@ export const reviewAPI = {
 
 // Chat API functions
 export const chatAPI = {
-  // Get user chats
-  getUserChats: () => apiRequest<any[]>('/chats'),
+  // Start or find direct chat between two users
+  startDirectChat: (targetUserId: number) =>
+    apiRequest<any>('/chats/start', {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId }),
+    }),
   
-  // Get chat by ID
-  getById: (id: number) => apiRequest<any>(`/chats/${id}`),
+  // Verify user participation in chat
+  verifyParticipation: (chatId: number) => 
+    apiRequest<any>(`/chats/${chatId}/verify`),
   
-  // Get chat messages
+  // Get other participants in chat
+  getCounterparts: (chatId: number) =>
+    apiRequest<any>(`/chats/${chatId}/counterparts`),
+  
+  // Get chat messages (moved to correct endpoint)
   getMessages: (chatId: number) => 
-    apiRequest<any[]>(`/chats/${chatId}/messages`),
+    apiRequest<any[]>(`/messages/${chatId}/messages`),
   
-  // Send message
+  // Send message (moved to correct endpoint)
   sendMessage: (chatId: number, messageData: any) =>
-    apiRequest<any>(`/chats/${chatId}/messages`, {
+    apiRequest<any>(`/messages/${chatId}/messages`, {
       method: 'POST',
       body: JSON.stringify(messageData),
     }),
@@ -243,16 +252,21 @@ export const chatAPI = {
 
 // Message API functions
 export const messageAPI = {
-  // Get all messages
-  getAll: () => apiRequest<any[]>('/messages'),
+  // Delete message
+  deleteMessage: (messageId: number) =>
+    apiRequest<any>(`/messages/${messageId}`, {
+      method: 'DELETE',
+    }),
   
-  // Get message by ID
-  getById: (id: number) => apiRequest<any>(`/messages/${id}`),
+  // Get chat messages (alias for chatAPI.getMessages)
+  getChatMessages: (chatId: number) => 
+    apiRequest<any[]>(`/messages/${chatId}/messages`),
   
-  // Mark message as read
-  markAsRead: (id: number) =>
-    apiRequest<any>(`/messages/${id}/read`, {
-      method: 'PUT',
+  // Send message to chat (alias for chatAPI.sendMessage)
+  sendToChat: (chatId: number, messageData: any) =>
+    apiRequest<any>(`/messages/${chatId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(messageData),
     }),
 };
 
