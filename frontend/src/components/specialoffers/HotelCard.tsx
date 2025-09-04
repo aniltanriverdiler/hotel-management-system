@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import Image from "next/image";
 import { Star, MapPin, Heart, Eye, Coffee, Car } from "lucide-react";

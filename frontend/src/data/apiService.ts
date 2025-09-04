@@ -74,23 +74,23 @@ async function apiRequest<T>(
 
 // Hotel API functions
 export const hotelAPI = {
-  // Get all hotels (public endpoint)
-  getAll: () => apiRequest<any[]>('/hotels', {}, false),
+  // Get all hotels with optional filtering and pagination (public endpoint)
+  getAll: (params: { city?: string; page?: number; limit?: number } = {}) => {
+    const searchParams = new URLSearchParams();
+    if (params.city) searchParams.append('city', params.city);
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    
+    const queryString = searchParams.toString();
+    const endpoint = queryString ? `/hotels?${queryString}` : '/hotels';
+    return apiRequest<any[]>(endpoint, {}, false);
+  },
   
   // Get hotel by ID (public endpoint)
   getById: (id: number) => apiRequest<any>(`/hotels/${id}`, {}, false),
   
-  // Get hotels by location (public endpoint)
-  getByLocation: (location: string) => 
-    apiRequest<any[]>(`/hotels?location=${encodeURIComponent(location)}`, {}, false),
-  
-  // Get hotels by category (public endpoint)
-  getByCategory: (category: string) => 
-    apiRequest<any[]>(`/hotels?category=${encodeURIComponent(category)}`, {}, false),
-  
-  // Search hotels (public endpoint)
-  search: (query: string) => 
-    apiRequest<any[]>(`/hotels/search?q=${encodeURIComponent(query)}`, {}, false),
+  // Get cities list (public endpoint)
+  getCities: () => apiRequest<string[]>('/hotels/cities/list', {}, false),
 };
 
 // Room API functions
@@ -132,17 +132,11 @@ export const reservationAPI = {
       body: JSON.stringify(reservationData),
     }),
   
-  // Update reservation
-  update: (id: number, updateData: any) =>
-    apiRequest<any>(`/reservations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updateData),
-    }),
-  
-  // Cancel reservation
-  cancel: (id: number) =>
-    apiRequest<any>(`/reservations/${id}/cancel`, {
-      method: 'PUT',
+  // Update reservation status
+  updateStatus: (id: number, status: string) =>
+    apiRequest<any>(`/reservations/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     }),
 };
 
@@ -200,29 +194,29 @@ export const userAPI = {
   getById: (id: number) => apiRequest<any>(`/users/${id}`),
 };
 
-// Rating API functions
-export const ratingAPI = {
-  // Get ratings for a hotel
+// Review API functions
+export const reviewAPI = {
+  // Get reviews for a hotel
   getByHotelId: (hotelId: number) => 
-    apiRequest<any[]>(`/ratings?hotelId=${hotelId}`),
+    apiRequest<any[]>(`/reviews/hotel/${hotelId}`, {}, false),
   
-  // Create new rating
-  create: (ratingData: any) =>
-    apiRequest<any>('/ratings', {
+  // Create new review
+  create: (reviewData: any) =>
+    apiRequest<any>('/reviews', {
       method: 'POST',
-      body: JSON.stringify(ratingData),
+      body: JSON.stringify(reviewData),
     }),
   
-  // Update rating
+  // Update review
   update: (id: number, updateData: any) =>
-    apiRequest<any>(`/ratings/${id}`, {
+    apiRequest<any>(`/reviews/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updateData),
     }),
   
-  // Delete rating
+  // Delete review
   delete: (id: number) =>
-    apiRequest<any>(`/ratings/${id}`, {
+    apiRequest<any>(`/reviews/${id}`, {
       method: 'DELETE',
     }),
 };
@@ -264,9 +258,13 @@ export const messageAPI = {
 
 // Image API functions
 export const imageAPI = {
-  // Upload image
-  upload: (formData: FormData) =>
-    apiRequest<any>('/images/upload', {
+  // Get hotel images
+  getByHotelId: (hotelId: number) => 
+    apiRequest<any>(`/images/${hotelId}`, {}, false),
+  
+  // Upload main image
+  uploadMain: (hotelId: number, formData: FormData) =>
+    apiRequest<any>(`/images/${hotelId}/main`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -274,12 +272,25 @@ export const imageAPI = {
       },
     }),
   
-  // Get image by ID
-  getById: (id: number) => apiRequest<any>(`/images/${id}`),
+  // Upload gallery images
+  uploadGallery: (hotelId: number, formData: FormData) =>
+    apiRequest<any>(`/images/${hotelId}/gallery`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData
+      },
+    }),
   
-  // Delete image
-  delete: (id: number) =>
-    apiRequest<any>(`/images/${id}`, {
+  // Delete main image
+  deleteMain: (hotelId: number) =>
+    apiRequest<any>(`/images/${hotelId}/main`, {
+      method: 'DELETE',
+    }),
+  
+  // Delete gallery image
+  deleteGallery: (imageId: number) =>
+    apiRequest<any>(`/images/gallery/${imageId}`, {
       method: 'DELETE',
     }),
 };
@@ -302,7 +313,7 @@ export default {
   room: roomAPI,
   reservation: reservationAPI,
   user: userAPI,
-  rating: ratingAPI,
+  review: reviewAPI,
   chat: chatAPI,
   message: messageAPI,
   image: imageAPI,

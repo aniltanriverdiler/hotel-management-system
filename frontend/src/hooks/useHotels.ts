@@ -2,7 +2,7 @@
 // Includes hotels, rooms, reservations, ratings, chats, messages, images
 
 import { useState, useEffect, useCallback } from 'react';
-import { hotelAPI, roomAPI, reservationAPI, userAPI, ratingAPI, chatAPI, messageAPI, imageAPI } from '@/data/apiService';
+import { hotelAPI, roomAPI, reservationAPI, userAPI, reviewAPI, chatAPI, messageAPI, imageAPI } from '@/data/apiService';
 
 interface UseAPIState<T> {
   data: T | null;
@@ -67,11 +67,10 @@ export const useMutation = <T, R>(mutationFn: (data: T) => Promise<R>) => {
 };
 
 // Hotel hooks
-export const useHotels = () => useAPI(() => hotelAPI.getAll());
+export const useHotels = (params: { city?: string; page?: number; limit?: number } = {}) => 
+  useAPI(() => hotelAPI.getAll(params), [params.city, params.page, params.limit]);
 export const useHotel = (id: number) => useAPI(() => hotelAPI.getById(id), [id]);
-export const useHotelsByLocation = (location: string) => useAPI(() => hotelAPI.getByLocation(location), [location]);
-export const useHotelsByCategory = (category: string) => useAPI(() => hotelAPI.getByCategory(category), [category]);
-export const useHotelSearch = (query: string) => useAPI(() => hotelAPI.search(query), [query]);
+export const useCities = () => useAPI(() => hotelAPI.getCities());
 
 // Room hooks
 export const useRooms = () => useAPI(() => roomAPI.getAll());
@@ -85,16 +84,15 @@ export const useReservation = (id: number) => useAPI(() => reservationAPI.getByI
 
 // Mutation hooks (reservation)
 export const useCreateReservation = () => useMutation<Record<string, unknown>, unknown>(reservationAPI.create);
-export const useUpdateReservation = () =>
-  useMutation<{ id: number; data: Record<string, unknown> }, unknown>(({ id, data }) => reservationAPI.update(id, data));
-export const useCancelReservation = () => useMutation<number, unknown>(reservationAPI.cancel);
+export const useUpdateReservationStatus = () =>
+  useMutation<{ id: number; status: string }, unknown>(({ id, status }) => reservationAPI.updateStatus(id, status));
 
-// Rating hooks
-export const useRatingsByHotel = (hotelId: number) => useAPI(() => ratingAPI.getByHotelId(hotelId), [hotelId]);
-export const useCreateRating = () => useMutation<Record<string, unknown>, unknown>(ratingAPI.create);
-export const useUpdateRating = () =>
-  useMutation<{ id: number; data: Record<string, unknown> }, unknown>(({ id, data }) => ratingAPI.update(id, data));
-export const useDeleteRating = () => useMutation<number, unknown>(ratingAPI.delete);
+// Review hooks
+export const useReviewsByHotel = (hotelId: number) => useAPI(() => reviewAPI.getByHotelId(hotelId), [hotelId]);
+export const useCreateReview = () => useMutation<Record<string, unknown>, unknown>(reviewAPI.create);
+export const useUpdateReview = () =>
+  useMutation<{ id: number; data: Record<string, unknown> }, unknown>(({ id, data }) => reviewAPI.update(id, data));
+export const useDeleteReview = () => useMutation<number, unknown>(reviewAPI.delete);
 
 // Chat hooks
 export const useUserChats = () => useAPI(() => chatAPI.getUserChats());
@@ -109,16 +107,16 @@ export const useMessage = (id: number) => useAPI(() => messageAPI.getById(id), [
 export const useMarkMessageAsRead = () => useMutation<number, unknown>(messageAPI.markAsRead);
 
 // Image hooks
-export const useUploadImage = () => useMutation<FormData, unknown>(imageAPI.upload);
-export const useImage = (id: number) => useAPI(() => imageAPI.getById(id), [id]);
-export const useDeleteImage = () => useMutation<number, unknown>(imageAPI.delete);
+export const useHotelImages = (hotelId: number) => useAPI(() => imageAPI.getByHotelId(hotelId), [hotelId]);
+export const useUploadMainImage = () => useMutation<{ hotelId: number; formData: FormData }, unknown>(({ hotelId, formData }) => imageAPI.uploadMain(hotelId, formData));
+export const useUploadGalleryImages = () => useMutation<{ hotelId: number; formData: FormData }, unknown>(({ hotelId, formData }) => imageAPI.uploadGallery(hotelId, formData));
+export const useDeleteMainImage = () => useMutation<number, unknown>(imageAPI.deleteMain);
+export const useDeleteGalleryImage = () => useMutation<number, unknown>(imageAPI.deleteGallery);
 
 export default {
   useHotels,
   useHotel,
-  useHotelsByLocation,
-  useHotelsByCategory,
-  useHotelSearch,
+  useCities,
   useRooms,
   useRoomsByHotel,
   useRoom,
@@ -126,12 +124,11 @@ export default {
   useReservationsByUser,
   useReservation,
   useCreateReservation,
-  useUpdateReservation,
-  useCancelReservation,
-  useRatingsByHotel,
-  useCreateRating,
-  useUpdateRating,
-  useDeleteRating,
+  useUpdateReservationStatus,
+  useReviewsByHotel,
+  useCreateReview,
+  useUpdateReview,
+  useDeleteReview,
   useUserChats,
   useChat,
   useChatMessages,
@@ -139,9 +136,11 @@ export default {
   useMessages,
   useMessage,
   useMarkMessageAsRead,
-  useUploadImage,
-  useImage,
-  useDeleteImage,
+  useHotelImages,
+  useUploadMainImage,
+  useUploadGalleryImages,
+  useDeleteMainImage,
+  useDeleteGalleryImage,
 };
 
 
