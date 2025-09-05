@@ -13,7 +13,7 @@ router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 
 // Çıkış
-router.post('/logout', AuthController.logout);
+router.post('/logout', authenticateToken, AuthController.logout);
 
 // Profil bilgileri
 router.get('/me', authenticateToken, AuthController.getProfile);
