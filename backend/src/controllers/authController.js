@@ -122,7 +122,7 @@ class AuthController {
         });
       }
       // is_online=true
-    await prisma.user.update({
+      const updatedUser = await prisma.user.update({
       where: { user_id: user.user_id },
       data: { is_online: true },
     });
@@ -133,7 +133,7 @@ class AuthController {
         { expiresIn: process.env.JWT_EXPIRES_IN }
       );
 
-      const { password: _, ...userWithoutPassword } = user;
+      const { password: _, ...userWithoutPassword } = updatedUser;
 
       return res.json({
         success: true,
