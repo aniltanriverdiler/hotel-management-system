@@ -1,18 +1,19 @@
- import { findOrCreateDirectChat, isUserParticipantOfChat, getCounterpartIds } from "../services/chatService.js";
-
-/**
- * 1-1 chat başlatır veya mevcut chat’i döner
- * POST /api/chats/start
- * body: { targetUserId }
- */
+import {
+  findOrCreateDirectChat,
+  isUserParticipantOfChat,
+  getCounterpartIds,
+} from "../services/chatService.js";
+// Starts a 1-1 chat or returns existing chat between two users.
 export const startDirectChat = async (req, res) => {
   try {
-    const userId = req.user.user_id; // auth middleware ile socket veya JWT'den geliyor
+    const userId = req.user.user_id; // auth middleware from socket or JWT
     const { targetUserId } = req.body;
-    
-if (!targetUserId || Number.isNaN(Number(targetUserId))) {
-  return res.status(400).json({ ok: false, error: "Geçerli bir targetUserId gerekli" });
-}
+
+    if (!targetUserId || Number.isNaN(Number(targetUserId))) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Geçerli bir targetUserId gerekli" });
+    }
     const chat = await findOrCreateDirectChat(userId, Number(targetUserId));
     return res.json({ ok: true, chat });
   } catch (err) {
@@ -20,10 +21,7 @@ if (!targetUserId || Number.isNaN(Number(targetUserId))) {
   }
 };
 
-/**
- * Kullanıcının chat katılımcısı olup olmadığını kontrol eder
- * GET /api/chats/:chatId/verify
- */
+// Checks if the user is a participant of the specified chat.
 export const verifyParticipation = async (req, res) => {
   try {
     const userId = req.user.user_id;
@@ -36,10 +34,7 @@ export const verifyParticipation = async (req, res) => {
   }
 };
 
-/**
- * Bir chattaki diğer katılımcıları döner
- * GET /api/chats/:chatId/counterparts
- */
+// Returns the other participants of a chat.
 export const getCounterparts = async (req, res) => {
   try {
     const userId = req.user.user_id;

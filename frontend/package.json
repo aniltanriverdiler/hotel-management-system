@@ -39,6 +39,7 @@
     "@types/node": "20.19.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/socket.io-client": "^3.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwind-scrollbar": "^4.0.2",
