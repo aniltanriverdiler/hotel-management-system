@@ -5,9 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 class AuthController {
-  /**
-   * Kullanıcı kaydı
-   */
+  // User registration
   async register(req, res) {
     try {
       const { name, email, password, role } = req.body;
@@ -19,7 +17,7 @@ class AuthController {
         });
       }
 
-      // Email formatı kontrolü
+      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({
@@ -28,7 +26,7 @@ class AuthController {
         });
       }
 
-      // Şifre uzunluğu kontrolü
+      // Password length validation
       if (password.length < 6) {
         return res.status(400).json({
           success: false,
@@ -36,7 +34,7 @@ class AuthController {
         });
       }
 
-      // Email benzersiz mi kontrol et
+      // Email uniqueness validation
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
         return res.status(409).json({
@@ -45,7 +43,7 @@ class AuthController {
         });
       }
 
-      // Şifre hashle
+      // Password hashing
       const hashedPassword = await bcrypt.hash(
         password,
         Number(process.env.BCRYPT_SALT_ROUNDS) || 12
@@ -54,18 +52,18 @@ class AuthController {
       const allowedRoles = ["CUSTOMER", "HOTEL_OWNER", "SUPPORT"];
       const userRole = allowedRoles.includes(role) ? role : "CUSTOMER";
 
-      // Kullanıcı oluştur
+      // User creation
       const user = await prisma.user.create({
         data: {
           name,
           email,
           password: hashedPassword,
           role: userRole,
-          is_online: false, 
+          is_online: false,
         },
       });
 
-      // JWT token oluştur
+      // JWT token creation
       const token = jwt.sign(
         { user_id: user.user_id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
@@ -92,9 +90,7 @@ class AuthController {
     }
   }
 
-  /**
-   * Kullanıcı girişi
-   */
+  // User login
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -121,11 +117,11 @@ class AuthController {
           error: "Geçersiz email veya şifre",
         });
       }
-      // is_online=true
+      // Set is_online to true
       const updatedUser = await prisma.user.update({
-      where: { user_id: user.user_id },
-      data: { is_online: true },
-    });
+        where: { user_id: user.user_id },
+        data: { is_online: true },
+      });
 
       const token = jwt.sign(
         { user_id: user.user_id, email: user.email, role: user.role },
@@ -153,9 +149,7 @@ class AuthController {
     }
   }
 
-  /**
-   * Profil bilgilerini getir
-   */
+  // Get profile information
   async getProfile(req, res) {
     try {
       const user = await prisma.user.findUnique({
@@ -183,9 +177,7 @@ class AuthController {
     }
   }
 
-  /**
-   * Şifre değiştir
-   */
+  // Change password
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
@@ -247,34 +239,30 @@ class AuthController {
     }
   }
 
-  /**
-   * Çıkış yap
-   */
+  // Logout
   async logout(req, res) {
-   try {
-    const { user_id } = req.user;
+    try {
+      const { user_id } = req.user;
 
-    //is_online = false 
-    await prisma.user.update({
-      where: { user_id },
-      data: { is_online: false },
-    });
+      //is_online = false
+      await prisma.user.update({
+        where: { user_id },
+        data: { is_online: false },
+      });
     } catch (error) {
-    console.error("Logout error:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Çıkış işlemi başarısız",
-    });
-  }
+      console.error("Logout error:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Çıkış işlemi başarısız",
+      });
+    }
     return res.json({
       success: true,
       message: "Başarıyla çıkış yapıldı",
     });
   }
 
-  /**
-   * Token yenileme
-   */
+  // Refresh token
   async refreshToken(req, res) {
     try {
       const { user_id } = req.user;
