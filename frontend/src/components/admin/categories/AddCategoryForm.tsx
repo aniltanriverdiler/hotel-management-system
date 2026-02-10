@@ -1,20 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { 
-  Upload, 
-  X, 
-  Save, 
-  Eye,
-  ImageIcon 
-} from 'lucide-react';
-import Image from 'next/image';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Upload, X, Save, Eye, ImageIcon } from "lucide-react";
+import Image from "next/image";
 
 interface CategoryFormData {
   name: string;
@@ -28,38 +22,38 @@ interface CategoryFormData {
 
 const AddCategoryForm: React.FC = () => {
   const [formData, setFormData] = useState<CategoryFormData>({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     isActive: true,
     image: null,
-    seoTitle: '',
-    seoDescription: '',
-    parentCategory: ''
+    seoTitle: "",
+    seoDescription: "",
+    parentCategory: "",
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Parent kategoriler (örnek data)
+  // Parent categories (sample data)
   const parentCategories = [
-    { id: '', name: 'No Parent Category' },
-    { id: 'luxury', name: 'Luxury Hotels' },
-    { id: 'budget', name: 'Budget Hotels' },
-    { id: 'business', name: 'Business Hotels' }
+    { id: "", name: "No Parent Category" },
+    { id: "luxury", name: "Luxury Hotels" },
+    { id: "budget", name: "Budget Hotels" },
+    { id: "business", name: "Business Hotels" },
   ];
 
   const handleInputChange = (field: keyof CategoryFormData, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      handleInputChange('image', file);
-      
+      handleInputChange("image", file);
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -70,7 +64,7 @@ const AddCategoryForm: React.FC = () => {
   };
 
   const removeImage = () => {
-    handleInputChange('image', null);
+    handleInputChange("image", null);
     setImagePreview(null);
   };
 
@@ -79,23 +73,23 @@ const AddCategoryForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Burada API çağrısı yapılacak
-      console.log('Form data:', formData);
-      
+      // API call will be made here
+      console.log("Form data:", formData);
+
       // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Başarılı olduğunda kategoriler listesine yönlendir
-      window.location.href = '/categories/list';
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Redirect to categories list on success
+      window.location.href = "/categories/list";
     } catch (error) {
-      console.error('Error creating category:', error);
+      console.error("Error creating category:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePreview = () => {
-    console.log('Preview category:', formData);
+    console.log("Preview category:", formData);
   };
 
   return (
@@ -115,7 +109,7 @@ const AddCategoryForm: React.FC = () => {
                   id="name"
                   placeholder="Enter category name"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   required
                 />
               </div>
@@ -126,7 +120,9 @@ const AddCategoryForm: React.FC = () => {
                   id="description"
                   placeholder="Enter category description"
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   rows={4}
                 />
               </div>
@@ -136,7 +132,9 @@ const AddCategoryForm: React.FC = () => {
                 <select
                   id="parentCategory"
                   value={formData.parentCategory}
-                  onChange={(e) => handleInputChange('parentCategory', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("parentCategory", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {parentCategories.map((category) => (
@@ -161,7 +159,9 @@ const AddCategoryForm: React.FC = () => {
                   id="seoTitle"
                   placeholder="Enter SEO title"
                   value={formData.seoTitle}
-                  onChange={(e) => handleInputChange('seoTitle', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("seoTitle", e.target.value)
+                  }
                 />
                 <p className="text-sm text-gray-500">
                   {formData.seoTitle.length}/60 characters
@@ -174,7 +174,9 @@ const AddCategoryForm: React.FC = () => {
                   id="seoDescription"
                   placeholder="Enter SEO description"
                   value={formData.seoDescription}
-                  onChange={(e) => handleInputChange('seoDescription', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("seoDescription", e.target.value)
+                  }
                   rows={3}
                 />
                 <p className="text-sm text-gray-500">
@@ -253,17 +255,18 @@ const AddCategoryForm: React.FC = () => {
                 <Switch
                   id="isActive"
                   checked={formData.isActive}
-                  onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+                  onCheckedChange={(checked) =>
+                    handleInputChange("isActive", checked)
+                  }
                 />
                 <Label htmlFor="isActive">
-                  {formData.isActive ? 'Active' : 'Inactive'}
+                  {formData.isActive ? "Active" : "Inactive"}
                 </Label>
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                {formData.isActive 
-                  ? 'This category will be visible to customers' 
-                  : 'This category will be hidden from customers'
-                }
+                {formData.isActive
+                  ? "This category will be visible to customers"
+                  : "This category will be hidden from customers"}
               </p>
             </CardContent>
           </Card>
@@ -278,7 +281,7 @@ const AddCategoryForm: React.FC = () => {
                   disabled={isLoading || !formData.name.trim()}
                 >
                   {isLoading ? (
-                    'Creating...'
+                    "Creating..."
                   ) : (
                     <>
                       <Save className="h-4 w-4 mr-2" />
@@ -286,7 +289,7 @@ const AddCategoryForm: React.FC = () => {
                     </>
                   )}
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="outline"

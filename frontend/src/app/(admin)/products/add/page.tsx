@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import AddHotelForm from '@/components/admin/products/AddHotelForm';
+import React from "react";
+import Link from "next/link";
+import AddHotelForm from "@/components/admin/products/AddHotelForm";
 
 const AddHotelPage: React.FC = () => {
   const handleSubmit = (data: any) => {
-    console.log('Hotel form data:', data);
-    // Burada API'ye gönderme işlemi yapılacak
+    console.log("Hotel form data:", data);
+    // API call can be made here
   };
 
   const handleCancel = () => {
-    // Dashboard'a geri dön
+    // Go back to dashboard
     window.history.back();
   };
 
@@ -24,7 +24,10 @@ const AddHotelPage: React.FC = () => {
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
               <li className="inline-flex items-center">
-                <Link href="/dashboard" className="text-gray-700 hover:text-blue-600">
+                <Link
+                  href="/dashboard"
+                  className="text-gray-700 hover:text-blue-600"
+                >
                   Dashboard
                 </Link>
               </li>

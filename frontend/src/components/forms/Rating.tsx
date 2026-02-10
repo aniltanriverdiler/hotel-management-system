@@ -2,8 +2,8 @@ import React from "react";
 import { Star, StarHalf } from "lucide-react";
 
 interface RatingProps {
-  value: number; // 0 - 5 arası decimal puan
-  size?: number; // opsiyonel, yıldız boyutu
+  value: number;
+  size?: number;
 }
 
 const Rating: React.FC<RatingProps> = ({ value, size = 16 }) => {
@@ -13,7 +13,7 @@ const Rating: React.FC<RatingProps> = ({ value, size = 16 }) => {
 
   return (
     <div className="flex items-center">
-      {/* Tam yıldızlar */}
+      {/* Full stars */}
       {[...Array(fullStars)].map((_, i) => (
         <Star
           key={`full-${i}`}
@@ -22,7 +22,7 @@ const Rating: React.FC<RatingProps> = ({ value, size = 16 }) => {
         />
       ))}
 
-      {/* Yarım yıldız */}
+      {/* Half star */}
       {halfStar && (
         <StarHalf
           size={size}
@@ -30,16 +30,12 @@ const Rating: React.FC<RatingProps> = ({ value, size = 16 }) => {
         />
       )}
 
-      {/* Boş yıldızlar */}
+      {/* Empty stars */}
       {[...Array(emptyStars)].map((_, i) => (
-        <Star
-          key={`empty-${i}`}
-          size={size}
-          className="text-gray-300 mr-1"
-        />
+        <Star key={`empty-${i}`} size={size} className="text-gray-300 mr-1" />
       ))}
 
-      {/* Puan yazısı */}
+      {/* Rating text */}
       <span className="text-sm text-gray-700 ml-1">{value.toFixed(1)}</span>
     </div>
   );

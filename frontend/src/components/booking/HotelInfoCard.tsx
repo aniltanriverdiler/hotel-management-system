@@ -1,7 +1,7 @@
-import React from 'react';
-import Image from 'next/image';
-import { Star, Eye, Coffee, Car } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from "react";
+import Image from "next/image";
+import { Star, Eye, Coffee, Car } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 function HotelInfoCard() {
   const renderStars = (rating: number) => {
@@ -41,16 +41,12 @@ function HotelInfoCard() {
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
                 Riad Deluxe
               </h2>
-              <p className="text-gray-500 font-medium">
-                Marakeş, Fas
-              </p>
+              <p className="text-gray-500 font-medium">Marakeş, Fas</p>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-gray-900">4.7</span>
-              <div className="flex items-center">
-                {renderStars(4.7)}
-              </div>
+              <div className="flex items-center">{renderStars(4.7)}</div>
               <span className="text-sm text-gray-500">(120)</span>
             </div>
           </div>

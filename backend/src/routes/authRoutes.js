@@ -1,27 +1,30 @@
-import { Router } from 'express';
-import AuthController from '../controllers/authController.js';
-import { authenticateToken } from '../middlewares/authMiddleware.js';
-
+import { Router } from "express";
+import AuthController from "../controllers/authController.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-// Kayıt
-router.post('/register', AuthController.register);
+// Registration
+router.post("/register", AuthController.register);
 
-// Giriş
-// router.post('/login', loginLimiter, AuthController.login); // rate-limit kullanırsan
-router.post('/login', AuthController.login);
+// Login
+// router.post('/login', loginLimiter, AuthController.login); // if you use rate-limit
+router.post("/login", AuthController.login);
 
-// Çıkış
-router.post('/logout', authenticateToken, AuthController.logout);
+// Logout
+router.post("/logout", authenticateToken, AuthController.logout);
 
-// Profil bilgileri
-router.get('/me', authenticateToken, AuthController.getProfile);
+// Profile information
+router.get("/me", authenticateToken, AuthController.getProfile);
 
-// Şifre değiştirme
-router.post('/change-password', authenticateToken, AuthController.changePassword);
+// Change password
+router.post(
+  "/change-password",
+  authenticateToken,
+  AuthController.changePassword
+);
 
-// (Opsiyonel) Token yenileme
+// (Optional) Token refresh
 // router.post('/refresh', authenticateToken, AuthController.refreshToken);
 
 export default router;

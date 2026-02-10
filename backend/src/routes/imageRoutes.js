@@ -2,12 +2,15 @@ import express from "express";
 import multer from "multer";
 import prisma from "../config/db.js";
 import { supabase } from "../config/supabase.js";
-import { authenticateToken, authorizeRoles } from "../middlewares/authMiddleware.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 7 * 1024 * 1024 }, // 7MB YÜKLEME SINIRI
+  limits: { fileSize: 7 * 1024 * 1024 }, // 7MB upload limit
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
       return cb(new Error("Sadece görsel yükleyebilirsiniz"));
@@ -38,10 +41,7 @@ async function removeFromSupabase(paths = []) {
   if (error) throw error;
 }
 
-/**
- * GET /api/images/:hotelId
- * Otelin ana görseli + galeri listesini getirir
- */
+// Returns the main image and gallery images of the hotel
 router.get("/:hotelId", async (req, res) => {
   try {
     const hotelId = Number(req.params.hotelId);
@@ -51,7 +51,14 @@ router.get("/:hotelId", async (req, res) => {
       select: {
         hotel_id: true,
         main_image_url: true,
-        images: { select: { image_id: true, url: true, storage_path: true, created_at: true } },
+        images: {
+          select: {
+            image_id: true,
+            url: true,
+            storage_path: true,
+            created_at: true,
+          },
+        },
       },
     });
 
@@ -62,15 +69,13 @@ router.get("/:hotelId", async (req, res) => {
     res.json({ success: true, data: hotel });
   } catch (err) {
     console.error("Get hotel images error:", err);
-    res.status(500).json({ success: false, error: "Görseller getirilirken hata oluştu" });
+    res
+      .status(500)
+      .json({ success: false, error: "Görseller getirilirken hata oluştu" });
   }
 });
 
-/**
- * POST /api/images/:hotelId/main
- * Ana görsel yükler (varsa eskisini siler)
- * Body: form-data → mainImage: <file>
- */
+// Uploads the main image of the hotel (deletes the old one if it exists)
 router.post(
   "/:hotelId/main",
   authenticateToken,
@@ -81,22 +86,34 @@ router.post(
       const hotelId = Number(req.params.hotelId);
       const file = req.file;
 
-      if (!file) return res.status(400).json({ success: false, error: "Dosya yüklenmedi" });
+      if (!file)
+        return res
+          .status(400)
+          .json({ success: false, error: "Dosya yüklenmedi" });
 
-      const hotel = await prisma.hotel.findUnique({ where: { hotel_id: hotelId } });
-      if (!hotel) return res.status(404).json({ success: false, error: "Otel bulunamadı" });
+      const hotel = await prisma.hotel.findUnique({
+        where: { hotel_id: hotelId },
+      });
+      if (!hotel)
+        return res
+          .status(404)
+          .json({ success: false, error: "Otel bulunamadı" });
 
-      // OWNER kontrolü (SUPPORT her zaman yetkili)
+      // Owner control (SUPPORT is always allowed)
       if (req.user.role !== "SUPPORT" && hotel.owner_id !== req.user.user_id) {
-        return res.status(403).json({ success: false, error: "Bu otel için yetkiniz yok" });
+        return res
+          .status(403)
+          .json({ success: false, error: "Bu otel için yetkiniz yok" });
       }
 
-      // Eski ana görsel varsa sil tek bi ana görsel olmalı 
+      // If the old main image exists, delete it and upload the new one
       if (hotel.main_image_path) {
         await removeFromSupabase([hotel.main_image_path]);
       }
 
-      const fileName = `hotels/${hotelId}/main_${Date.now()}_${file.originalname}`;
+      const fileName = `hotels/${hotelId}/main_${Date.now()}_${
+        file.originalname
+      }`;
       const { url, path } = await uploadToSupabase(fileName, file);
 
       const updated = await prisma.hotel.update({
@@ -104,7 +121,11 @@ router.post(
         data: { main_image_url: url, main_image_path: path },
       });
 
-      res.json({ success: true, message: "Ana görsel yüklendi", data: { main_image_url: updated.main_image_url } });
+      res.json({
+        success: true,
+        message: "Ana görsel yüklendi",
+        data: { main_image_url: updated.main_image_url },
+      });
     } catch (err) {
       console.error("Upload main image error:", err);
       res.status(500).json({ success: false, error: "Ana görsel yüklenemedi" });
@@ -112,10 +133,7 @@ router.post(
   }
 );
 
-/**
- * DELETE /api/images/:hotelId/main
- * Ana görseli siler 
- */
+// Deletes the main image of the hotel
 router.delete(
   "/:hotelId/main",
   authenticateToken,
@@ -124,14 +142,22 @@ router.delete(
     try {
       const hotelId = Number(req.params.hotelId);
 
-      const hotel = await prisma.hotel.findUnique({ where: { hotel_id: hotelId } });
-      if (!hotel) return res.status(404).json({ success: false, error: "Otel bulunamadı" });
+      const hotel = await prisma.hotel.findUnique({
+        where: { hotel_id: hotelId },
+      });
+      if (!hotel)
+        return res
+          .status(404)
+          .json({ success: false, error: "Otel bulunamadı" });
 
       if (req.user.role !== "SUPPORT" && hotel.owner_id !== req.user.user_id) {
-        return res.status(403).json({ success: false, error: "Bu otel için yetkiniz yok" });
+        return res
+          .status(403)
+          .json({ success: false, error: "Bu otel için yetkiniz yok" });
       }
 
-      if (hotel.main_image_path) await removeFromSupabase([hotel.main_image_path]);
+      if (hotel.main_image_path)
+        await removeFromSupabase([hotel.main_image_path]);
 
       await prisma.hotel.update({
         where: { hotel_id: hotelId },
@@ -146,11 +172,7 @@ router.delete(
   }
 );
 
-/**
- * POST /api/images/:hotelId/gallery
- * Çoklu galeri yükleme
- * Body: form-data → images: <file[]>
- */
+// Uploads multiple gallery images of the hotel
 router.post(
   "/:hotelId/gallery",
   authenticateToken,
@@ -162,30 +184,50 @@ router.post(
       const files = req.files || [];
 
       if (files.length === 0) {
-        return res.status(400).json({ success: false, error: "Resim yüklenmedi" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Resim yüklenmedi" });
       }
 
-      const hotel = await prisma.hotel.findUnique({ where: { hotel_id: hotelId } });
-      if (!hotel) return res.status(404).json({ success: false, error: "Otel bulunamadı" });
+      const hotel = await prisma.hotel.findUnique({
+        where: { hotel_id: hotelId },
+      });
+      if (!hotel)
+        return res
+          .status(404)
+          .json({ success: false, error: "Otel bulunamadı" });
 
       if (req.user.role !== "SUPPORT" && hotel.owner_id !== req.user.user_id) {
-        return res.status(403).json({ success: false, error: "Bu otel için yetkiniz yok" });
+        return res
+          .status(403)
+          .json({ success: false, error: "Bu otel için yetkiniz yok" });
       }
 
       const created = [];
       for (const file of files) {
-        const fileName = `hotels/${hotelId}/gallery/${Date.now()}_${file.originalname}`;
+        const fileName = `hotels/${hotelId}/gallery/${Date.now()}_${
+          file.originalname
+        }`;
         const { url, path } = await uploadToSupabase(fileName, file);
 
         const img = await prisma.image.create({
           data: { hotel_id: hotelId, url, storage_path: path },
-          select: { image_id: true, url: true, storage_path: true, created_at: true },
+          select: {
+            image_id: true,
+            url: true,
+            storage_path: true,
+            created_at: true,
+          },
         });
 
         created.push(img);
       }
 
-      res.json({ success: true, message: "Galeri görselleri eklendi", data: created });
+      res.json({
+        success: true,
+        message: "Galeri görselleri eklendi",
+        data: created,
+      });
     } catch (err) {
       console.error("Upload gallery images error:", err);
       res.status(500).json({ success: false, error: "Galeri yüklenemedi" });
@@ -193,10 +235,7 @@ router.post(
   }
 );
 
-/**
- * DELETE /api/images/gallery/:imageId
- * Tekil galeri görseli sil
- */
+// Deletes a single gallery image
 router.delete(
   "/gallery/:imageId",
   authenticateToken,
@@ -211,12 +250,19 @@ router.delete(
       });
 
       if (!image) {
-        return res.status(404).json({ success: false, error: "Görsel bulunamadı" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Görsel bulunamadı" });
       }
 
-      // Yetki kontrolü → SUPPORT her zaman yetkili
-      if (req.user.role !== "SUPPORT" && image.hotel.owner_id !== req.user.user_id) {
-        return res.status(403).json({ success: false, error: "Bu görsel için yetkiniz yok" });
+      // Permission control (SUPPORT is always allowed)
+      if (
+        req.user.role !== "SUPPORT" &&
+        image.hotel.owner_id !== req.user.user_id
+      ) {
+        return res
+          .status(403)
+          .json({ success: false, error: "Bu görsel için yetkiniz yok" });
       }
       await removeFromSupabase([image.storage_path]);
 

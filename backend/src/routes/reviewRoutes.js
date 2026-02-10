@@ -4,9 +4,7 @@ import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-/**
- * Bir otele yorum ekle (score + comment)
- */
+// Creates a new review for a hotel
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { hotel_id, score, comment } = req.body;
@@ -41,13 +39,13 @@ router.post("/", authenticateToken, async (req, res) => {
     res.status(201).json({ success: true, data: review });
   } catch (err) {
     console.error("Create review error:", err);
-    res.status(500).json({ success: false, error: "Yorum eklenirken hata oluştu" });
+    res
+      .status(500)
+      .json({ success: false, error: "Yorum eklenirken hata oluştu" });
   }
 });
 
-/**
- * Belirli otelin yorumlarını listele
- */
+// Returns the reviews of a hotel
 router.get("/hotel/:hotelId", async (req, res) => {
   try {
     const { hotelId } = req.params;
@@ -63,26 +61,32 @@ router.get("/hotel/:hotelId", async (req, res) => {
     res.json({ success: true, data: reviews });
   } catch (err) {
     console.error("Get hotel reviews error:", err);
-    res.status(500).json({ success: false, error: "Yorumlar getirilirken hata oluştu" });
+    res
+      .status(500)
+      .json({ success: false, error: "Yorumlar getirilirken hata oluştu" });
   }
 });
 
-/**
- * Kullanıcının kendi yorumunu güncellemesi
- */
+// Updates the review of the user
 router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { score, comment } = req.body;
     const user_id = req.user.user_id;
 
-    const review = await prisma.review.findUnique({ where: { review_id: Number(id) } });
+    const review = await prisma.review.findUnique({
+      where: { review_id: Number(id) },
+    });
     if (!review) {
-      return res.status(404).json({ success: false, error: "Yorum bulunamadı" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Yorum bulunamadı" });
     }
 
     if (review.user_id !== user_id) {
-      return res.status(403).json({ success: false, error: "Bu yorumu güncelleme yetkiniz yok" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Bu yorumu güncelleme yetkiniz yok" });
     }
 
     const updated = await prisma.review.update({
@@ -96,32 +100,40 @@ router.put("/:id", authenticateToken, async (req, res) => {
     res.json({ success: true, data: updated });
   } catch (err) {
     console.error("Update review error:", err);
-    res.status(500).json({ success: false, error: "Yorum güncellenirken hata oluştu" });
+    res
+      .status(500)
+      .json({ success: false, error: "Yorum güncellenirken hata oluştu" });
   }
 });
 
-/**
- * Yorumu sil
- */
+// Deletes a review
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const user_id = req.user.user_id;
 
-    const review = await prisma.review.findUnique({ where: { review_id: Number(id) } });
+    const review = await prisma.review.findUnique({
+      where: { review_id: Number(id) },
+    });
     if (!review) {
-      return res.status(404).json({ success: false, error: "Yorum bulunamadı" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Yorum bulunamadı" });
     }
 
     if (review.user_id !== user_id) {
-      return res.status(403).json({ success: false, error: "Bu yorumu silme yetkiniz yok" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Bu yorumu silme yetkiniz yok" });
     }
 
     await prisma.review.delete({ where: { review_id: Number(id) } });
     res.json({ success: true, message: "Yorum başarıyla silindi" });
   } catch (err) {
     console.error("Delete review error:", err);
-    res.status(500).json({ success: false, error: "Yorum silinirken hata oluştu" });
+    res
+      .status(500)
+      .json({ success: false, error: "Yorum silinirken hata oluştu" });
   }
 });
 

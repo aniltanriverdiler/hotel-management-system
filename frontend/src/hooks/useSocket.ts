@@ -1,270 +1,279 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import socketService from '@/services/socketService';
-import { SocketConnectionStatus, SocketError } from '@/types/socket';
-import { authHelpers } from '@/utils/auth';
+import { useState, useEffect, useCallback, useRef } from "react";
+import socketService from "@/services/socketService";
+import { SocketConnectionStatus, SocketError } from "@/types/socket";
+import { authHelpers } from "@/utils/auth";
 
 // ===============================================
-// 🎯 useSocket Hook - Socket Bağlantı Yönetimi
+// 🎯 useSocket Hook - Socket Connection Management
 // ===============================================
 
 /**
- * 🔌 Socket bağlantısını React component lifecycle'ına entegre eden hook
- * 
- * Bu hook şunları yapar:
- * - Socket bağlantı durumunu state'te tutar
- * - Component mount/unmount'da otomatik bağlantı yönetir
- * - Authentication error'larını handle eder
- * - Reconnection mantığını yürütür
- * 
- * @param autoConnect - Component mount olduğunda otomatik bağlansın mı? (default: true)
- * @returns Socket connection state ve control fonksiyonları
+ * 🔌 Hook that integrates the socket connection into the React component lifecycle
+ *
+ * This hook does the following:
+ * - Keeps socket connection status in state
+ * - Manages automatic connection on component mount/unmount
+ * - Handles authentication errors
+ * - Runs reconnection logic
+ *
+ * @param autoConnect - Should it automatically connect when the component mounts? (default: true)
+ * @returns Socket connection state and control functions
  */
 export const useSocket = (autoConnect: boolean = true) => {
   // ===============================================
-  // 📊 STATE YÖNETİMİ
+  // 📊 STATE MANAGEMENT
   // ===============================================
-  
-  // Bağlantı durumu - enum değerler kullanıyoruz
-  const [connectionStatus, setConnectionStatus] = useState<SocketConnectionStatus>('disconnected');
-  
-  // Hata durumu - error olursa detayları burada
+
+  // Connection status - we use enum values
+  const [connectionStatus, setConnectionStatus] =
+    useState<SocketConnectionStatus>("disconnected");
+
+  // Error state - details are stored here if an error occurs
   const [error, setError] = useState<SocketError | null>(null);
-  
-  // Reconnection denemesi sayısı
+
+  // Number of reconnection attempts
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  
-  // Son bağlantı zamanı (debug için)
+
+  // Last connection time (for debugging)
   const [lastConnectedAt, setLastConnectedAt] = useState<Date | null>(null);
-  
+
   // ===============================================
-  // 📋 REF YÖNETİMİ
+  // 📋 REF MANAGEMENT
   // ===============================================
-  
-  // Reconnection timer'ını tutmak için ref
+
+  // Ref to store reconnection timer
   const reconnectionTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Component unmount oldu mu kontrolü (memory leak önleme)
+
+  // Check if component is unmounted (to prevent memory leaks)
   const isMountedRef = useRef(true);
-  
+
   // ===============================================
-  // 🎯 CALLBACK FONKSİYONLARI
+  // 🎯 CALLBACK FUNCTIONS
   // ===============================================
-  
+
   /**
-   * 🔗 Socket bağlantısını başlat
-   * Bu fonksiyon button click vs. ile manuel çağrılabilir
+   * 🔗 Start the socket connection
+   * This function can be called manually (e.g. via button click)
    */
   const connect = useCallback(async () => {
     try {
-      // Zaten bağlıysa veya bağlanmaya çalışıyorsa skip
-      if (connectionStatus === 'connected' || connectionStatus === 'connecting') {
-        console.log('🔄 Zaten bağlı veya bağlanıyor, skip...');
+      // If already connected or trying to connect, skip
+      if (
+        connectionStatus === "connected" ||
+        connectionStatus === "connecting"
+      ) {
+        console.log("🔄 Already connected or connecting, skipping...");
         return;
       }
-      
-      console.log('🔌 Socket bağlantısı başlatılıyor...');
-      setConnectionStatus('connecting');
+
+      console.log("🔌 Socket connection is starting...");
+      setConnectionStatus("connecting");
       setError(null);
-      
-      // Authentication kontrolü
+
+      // Authentication check
       if (!authHelpers.isLoggedIn()) {
-        throw new Error('Kullanıcı giriş yapmamış');
+        throw new Error("User is not logged in");
       }
-      
+
       // Actual socket connection
       const socket = await socketService.connect();
-      
+
       if (socket && isMountedRef.current) {
-        setConnectionStatus('connected');
+        setConnectionStatus("connected");
         setLastConnectedAt(new Date());
         setReconnectAttempts(0);
-        console.log('✅ Socket bağlantısı başarılı');
+        console.log("✅ Socket connection successful");
       }
-      
     } catch (err) {
-      console.error('❌ Socket bağlantı hatası:', err);
-      
+      console.error("❌ Socket connection error:", err);
+
       if (isMountedRef.current) {
-        setConnectionStatus('error');
+        setConnectionStatus("error");
         setError({
-          type: 'connection',
-          message: err instanceof Error ? err.message : 'Bağlantı hatası',
-          originalError: err
+          type: "connection",
+          message: err instanceof Error ? err.message : "Connection error",
+          originalError: err,
         });
       }
     }
   }, [connectionStatus]);
-  
+
   /**
-   * 📴 Socket bağlantısını kapat
-   * Bu fonksiyon manuel veya component unmount'da çağrılır
+   * 📴 Close the socket connection
+   * This function is called manually or on component unmount
    */
   const disconnect = useCallback(() => {
-    console.log('📴 Socket bağlantısı kapatılıyor...');
-    
-    // Reconnection timer'ını temizle
+    console.log("📴 Closing socket connection...");
+
+    // Clear reconnection timer
     if (reconnectionTimerRef.current) {
       clearTimeout(reconnectionTimerRef.current);
       reconnectionTimerRef.current = null;
     }
-    
-    // Socket'i kapat
+
+    // Close the socket
     socketService.disconnect();
-    
+
     if (isMountedRef.current) {
-      setConnectionStatus('disconnected');
+      setConnectionStatus("disconnected");
       setError(null);
       setReconnectAttempts(0);
     }
   }, []);
-  
+
   /**
-   * 🔄 Otomatik reconnection mantığı
-   * Bağlantı koptuğunda belirli süre sonra tekrar dener
+   * 🔄 Automatic reconnection logic
+   * When the connection is lost, it retries after a certain delay
    */
   const attemptReconnection = useCallback(() => {
-    const maxAttempts = 3; // Daha az deneme
-    const baseDelay = 3000; // 3 saniye başlangıç
-    
+    const maxAttempts = 3; // Fewer attempts
+    const baseDelay = 3000; // 3 seconds initial delay
+
     if (reconnectAttempts >= maxAttempts) {
-      console.warn('⚠️ Maksimum reconnection denemesi aşıldı');
-      setConnectionStatus('error');
+      console.warn("⚠️ Maximum reconnection attempts exceeded");
+      setConnectionStatus("error");
       setError({
-        type: 'connection',
-        message: `${maxAttempts} deneme sonrası bağlantı kurulamadı`
+        type: "connection",
+        message: `Connection could not be established after ${maxAttempts} attempts`,
       });
       return;
     }
-    
+
     // Exponential backoff: 3s, 6s, 12s
     const delay = baseDelay * Math.pow(2, reconnectAttempts);
-    
-    console.log(`🔄 ${delay}ms sonra reconnection deneniyor... (${reconnectAttempts + 1}/${maxAttempts})`);
-    
+
+    console.log(
+      `🔄 Reconnection will be attempted in ${delay}ms... (${
+        reconnectAttempts + 1
+      }/${maxAttempts})`
+    );
+
     reconnectionTimerRef.current = setTimeout(() => {
       if (isMountedRef.current) {
-        setReconnectAttempts(prev => prev + 1);
+        setReconnectAttempts((prev) => prev + 1);
         connect();
       }
     }, delay);
   }, [reconnectAttempts, connect]);
-  
+
   // ===============================================
-  // 🎪 SOCKET EVENT LİSTENER'LAR
+  // 🎪 SOCKET EVENT LISTENERS
   // ===============================================
-  
+
   useEffect(() => {
-    console.log('🎪 Socket event listenerlar kuruluyor...');
-    
-    // ✅ Bağlantı başarılı olduğunda
+    console.log("🎪 Setting up socket event listeners...");
+
+    // ✅ When the connection is successful
     socketService.onConnection(() => {
       if (isMountedRef.current) {
-        console.log('🎉 Socket onConnection event alındı');
-        setConnectionStatus('connected');
+        console.log("🎉 Socket onConnection event received");
+        setConnectionStatus("connected");
         setError(null);
         setReconnectAttempts(0);
         setLastConnectedAt(new Date());
       }
     });
-    
-    // ❌ Bağlantı koptuğunda  
+
+    // ❌ When the connection is lost
     socketService.onDisconnection((reason: string) => {
       if (isMountedRef.current) {
-        console.log('💔 Socket onDisconnection event alındı:', reason);
-        setConnectionStatus('disconnected');
-        
-        // Kullanıcı manuel kapattıysa reconnect yapma
-        if (reason !== 'io client disconnect') {
+        console.log("💔 Socket onDisconnection event received:", reason);
+        setConnectionStatus("disconnected");
+
+        // If the user disconnected manually, do not reconnect
+        if (reason !== "io client disconnect") {
           attemptReconnection();
         }
       }
     });
-    
+
     // Cleanup function
     return () => {
-      console.log('🧹 Socket event listenerlar temizleniyor...');
-      // Not: socketService kendi cleanup'ını yapıyor
+      console.log("🧹 Cleaning up socket event listeners...");
+      // Note: socketService handles its own cleanup
     };
   }, [attemptReconnection]);
-  
+
   // ===============================================
-  // 🚀 COMPONENT LIFECYCLE YÖNETİMİ
+  // 🚀 COMPONENT LIFECYCLE MANAGEMENT
   // ===============================================
-  
-  // Component mount olduğunda otomatik bağlan
+
+  // Automatically connect when the component mounts
   useEffect(() => {
     if (autoConnect && authHelpers.isLoggedIn()) {
-      console.log('🚀 Component mount oldu, otomatik bağlantı başlatılıyor...');
+      console.log("🚀 Component mounted, starting automatic connection...");
       connect();
     }
-    
+
     // Component unmount cleanup
     return () => {
-      console.log('👋 Component unmount oluyor, socket kapatılıyor...');
+      console.log("👋 Component is unmounting, closing socket...");
       isMountedRef.current = false;
-      
-      // Timer'ları temizle
+
+      // Clear timers
       if (reconnectionTimerRef.current) {
         clearTimeout(reconnectionTimerRef.current);
       }
-      
-      // Socket'i kapat
+
+      // Close the socket
       socketService.disconnect();
     };
   }, [autoConnect, connect]);
 
-  // socketService ile state senkronizasyonu - sadece başlangıçta
+  // State synchronization with socketService - only on initial load
   useEffect(() => {
     const serviceConnected = socketService.getConnectionStatus();
-    if (serviceConnected && connectionStatus !== 'connected') {
-      console.log('🔄 useSocket: socketService ile senkronize ediliyor -> connected');
-      setConnectionStatus('connected');
+    if (serviceConnected && connectionStatus !== "connected") {
+      console.log(
+        "🔄 useSocket: synchronizing with socketService -> connected"
+      );
+      setConnectionStatus("connected");
       setError(null);
       setLastConnectedAt(new Date());
     }
-    // Periyodik kontrol kaldırıldı - event listener'lar yeterli
-  }, []); // Sadece mount'ta bir kez çalış
-  
+    // Periodic checks were removed - event listeners are sufficient
+  }, []); // Run only once on mount
+
   // ===============================================
-  // 🔍 COMPUTED VALUES (Türetilmiş değerler)
+  // 🔍 COMPUTED VALUES (Derived values)
   // ===============================================
-  
-  // Basit boolean flag'ler (UI'da kullanım kolaylığı için)
-  const isConnected = connectionStatus === 'connected';
-  const isConnecting = connectionStatus === 'connecting';
-  const isDisconnected = connectionStatus === 'disconnected';
-  const hasError = connectionStatus === 'error' || error !== null;
-  
+
+  // Simple boolean flags (for convenient use in UI)
+  const isConnected = connectionStatus === "connected";
+  const isConnecting = connectionStatus === "connecting";
+  const isDisconnected = connectionStatus === "disconnected";
+  const hasError = connectionStatus === "error" || error !== null;
+
   // ===============================================
-  // 📤 HOOK API (Dönüş değerleri)
+  // 📤 HOOK API (Return values)
   // ===============================================
-  
+
   return {
-    // 📊 State bilgileri
+    // 📊 State information
     connectionStatus,
     isConnected,
-    isConnecting, 
+    isConnecting,
     isDisconnected,
     hasError,
     error,
     reconnectAttempts,
     lastConnectedAt,
-    
-    // 🎮 Control fonksiyonları
+
+    // 🎮 Control functions
     connect,
     disconnect,
-    
-    // 🔍 Utility fonksiyonları
-    getSocket: socketService.getSocket,  // Debug için socket instance'a erişim
-    isLoggedIn: authHelpers.isLoggedIn   // Auth durum kontrolü
+
+    // 🔍 Utility functions
+    getSocket: socketService.getSocket, // Access to socket instance for debugging
+    isLoggedIn: authHelpers.isLoggedIn, // Check auth status
   };
 };
 
 // ===============================================
-// 📋 TİP EXPORT'LARI
+// 📋 TYPE EXPORTS
 // ===============================================
 
-// Hook'un return tipini export et (başka yerlerde kullanım için)
+// Export hook's return type (for usage in other places)
 export type UseSocketReturn = ReturnType<typeof useSocket>;
 
 // Default export

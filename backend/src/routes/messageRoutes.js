@@ -1,15 +1,19 @@
 import express from "express";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
-import { getChatMessages, sendMessage,deleteMessage } from "../controllers/messagesController.js";
+import {
+  getChatMessages,
+  sendMessage,
+  deleteMessage,
+} from "../controllers/messagesController.js";
 
 const router = express.Router();
 
-// Mesajları getir
+// Returns the messages of a chat
 router.get("/:chatId/messages", authenticateToken, getChatMessages);
 
-// Mesaj gönder
+// Sends a message to a chat
 router.post("/:chatId/messages", authenticateToken, sendMessage);
-//mesaj silme için
+// Deletes a message
 router.delete("/:messageId", authenticateToken, deleteMessage);
 
 export default router;

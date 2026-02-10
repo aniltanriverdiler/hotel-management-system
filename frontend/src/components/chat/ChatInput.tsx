@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2, AlertCircle } from 'lucide-react';
+import { Send, Loader2, AlertCircle } from "lucide-react";
 
 interface ChatInputProps {
   messageContent: string;
@@ -13,117 +13,123 @@ interface ChatInputProps {
   onTypingIndicator: (typing: boolean) => void;
 }
 
-export default function ChatInput({ 
-  messageContent, 
-  onContentChange, 
-  onSendMessage, 
-  canSendMessage, 
-  isSending, 
+export default function ChatInput({
+  messageContent,
+  onContentChange,
+  onSendMessage,
+  canSendMessage,
+  isSending,
   inputError,
-  onTypingIndicator 
+  onTypingIndicator,
 }: ChatInputProps) {
-  
-  // Debug için ChatInput durumunu log'la
-  console.log('💬 ChatInput render:', {
+  // Debug ChatInput status to log
+  console.log("ChatInput render:", {
     canSendMessage,
     isSending,
     hasContent: messageContent.trim().length > 0,
     inputError,
     inputDisabled: isSending,
-    buttonDisabled: isSending || !messageContent.trim()
+    buttonDisabled: isSending || !messageContent.trim(),
   });
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  // 📤 Mesaj gönderme handler
+
+  // Message send handler
   const handleSendMessage = async () => {
-    // Basit kontrol - sadece mesaj içeriği var mı?
+    // Simple check - only message content?
     if (!messageContent.trim()) {
-      console.warn('⚠️ Boş mesaj gönderilmeye çalışıldı');
+      console.warn("⚠️ Boş mesaj gönderilmeye çalışıldı");
       return;
     }
-    
-    console.log('📤 Mesaj gönderme işlemi başlatılıyor:', messageContent.trim());
-    
+
+    console.log(
+      "📤 Mesaj gönderme işlemi başlatılıyor:",
+      messageContent.trim()
+    );
+
     try {
       await onSendMessage(messageContent);
-      // Input'u focus'la (kullanıcı deneyimi için)
+      // Focus input (for user experience)
       inputRef.current?.focus();
-      console.log('✅ Mesaj başarıyla gönderildi');
+      console.log("✅ Mesaj başarıyla gönderildi");
     } catch (error) {
-      console.error('❌ Mesaj gönderme hatası (ignore ediliyor):', error);
-      // Hata olsa da input'u temizle ve focus'la - kullanıcı deneyimi için
+      console.error("❌ Mesaj gönderme hatası (ignore ediliyor):", error);
+      // Even if there's an error, clear the input and focus - for user experience
       inputRef.current?.focus();
-      // Backend hatası da olsa kullanıcıya gösterme - optimistic update zaten mesajı gösterdi
+      // Even if there's an error, show it to the user - optimistic update already shows the message
     }
   };
 
-  // ⌨️ Keyboard event handler
+  // Keyboard event handler
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  // 📝 Input change handler (typing indicator ile)
+  // Input change handler (typing indicator)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onContentChange(newValue);
-    
+
     // Typing indicator logic
     if (newValue.length > 0 && messageContent.length === 0) {
-      // Yazmaya başladı
+      // Started typing
       onTypingIndicator(true);
     } else if (newValue.length === 0 && messageContent.length > 0) {
-      // Yazmayı bıraktı
+      // Stopped typing
       onTypingIndicator(false);
     }
   };
 
-  // 🎯 Input blur handler (typing stop)
+  // Input blur handler (typing stop)
   const handleInputBlur = () => {
     onTypingIndicator(false);
   };
 
   return (
     <div className="p-6 border-t border-border bg-background">
-      {/* 🚨 Error message */}
+      {/* Error message */}
       {inputError && (
         <div className="flex items-center gap-2 p-3 mb-3 bg-red-50 border border-red-200 rounded-lg">
           <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
           <span className="text-sm text-red-700">{inputError}</span>
         </div>
       )}
-      
-      {/* 💬 Input area */}
+
+      {/* Input area */}
       <div className="flex gap-3">
         <div className="flex-1 relative">
-          <Input 
+          <Input
             ref={inputRef}
-            placeholder={isSending ? "Gönderiliyor..." : "Mesajınızı yazın..."} 
+            placeholder={isSending ? "Gönderiliyor..." : "Mesajınızı yazın..."}
             value={messageContent}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             onBlur={handleInputBlur}
             disabled={isSending}
             className={`h-12 text-base pr-4 ${
-              inputError ? 'border-red-300 focus:border-red-500' : ''
+              inputError ? "border-red-300 focus:border-red-500" : ""
             }`}
-            maxLength={1000} // Mesaj karakter sınırı
+            maxLength={1000} // Message character limit
           />
-          
-          {/* 📊 Character counter (uzun mesajlar için) */}
+
+          {/* Character counter (for long messages) */}
           {messageContent.length > 800 && (
-            <div className={`absolute -top-6 right-0 text-xs ${
-              messageContent.length > 950 ? 'text-red-500' : 'text-muted-foreground'
-            }`}>
+            <div
+              className={`absolute -top-6 right-0 text-xs ${
+                messageContent.length > 950
+                  ? "text-red-500"
+                  : "text-muted-foreground"
+              }`}
+            >
               {messageContent.length}/1000
             </div>
           )}
         </div>
-        
-        {/* 📤 Send button */}
+
+        {/* Send button */}
         <Button
           onClick={handleSendMessage}
           disabled={isSending || !messageContent.trim()}
@@ -142,14 +148,12 @@ export default function ChatInput({
           )}
         </Button>
       </div>
-      
-      {/* 💡 Helper text */}
+
+      {/* Helper text */}
       <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
         <span>Enter ile gönder, Shift+Enter ile yeni satır</span>
         {isSending && (
-          <span className="text-orange-500">
-            ⏳ Gönderiliyor...
-          </span>
+          <span className="text-orange-500">⏳ Gönderiliyor...</span>
         )}
       </div>
     </div>

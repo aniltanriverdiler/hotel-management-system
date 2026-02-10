@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Search, Bell, User, Mail, FileText, Settings, Headphones, LogOut, Menu, ChevronRight } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  Search,
+  Bell,
+  User,
+  Mail,
+  FileText,
+  Settings,
+  Headphones,
+  LogOut,
+  Menu,
+  ChevronRight,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,19 +23,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
   sidebarCollapsed?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarCollapsed = false }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const Header: React.FC<HeaderProps> = ({
+  onToggleSidebar,
+  sidebarCollapsed = false,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Search:', searchQuery);
+    console.log("Search:", searchQuery);
   };
 
   return (
@@ -58,7 +72,10 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarCollapsed = fal
 
       {/* Search */}
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <form className="ml-auto flex-1 sm:flex-initial" onSubmit={handleSearchSubmit}>
+        <form
+          className="ml-auto flex-1 sm:flex-initial"
+          onSubmit={handleSearchSubmit}
+        >
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
@@ -104,7 +121,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarCollapsed = fal
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Ralph Edwards</p>
-                  <p className="text-xs text-muted-foreground">Are you there? interested i this...</p>
+                  <p className="text-xs text-muted-foreground">
+                    Are you there? interested i this...
+                  </p>
                 </div>
                 <span className="text-xs text-muted-foreground">10:13 PM</span>
               </div>
@@ -131,8 +150,12 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarCollapsed = fal
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Kristin Watson</p>
-                <p className="text-xs leading-none text-muted-foreground">Admin</p>
+                <p className="text-sm font-medium leading-none">
+                  Kristin Watson
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  Admin
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { Save, ArrowLeft, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Save, ArrowLeft, Trash2 } from "lucide-react";
 
 interface EditPageFormProps {
   pageId?: string;
@@ -17,30 +17,30 @@ interface EditPageFormProps {
 
 // Mock data for editing
 const mockPageData = {
-  id: '#01',
-  name: 'Home 1',
-  slug: 'home-1',
-  template: 'default',
-  content: 'This is the content of Home 1 page...',
-  metaTitle: 'Home 1 - StayEase',
-  metaDescription: 'Welcome to StayEase Home 1 page description.',
-  status: 'published'
+  id: "#01",
+  name: "Home 1",
+  slug: "home-1",
+  template: "default",
+  content: "This is the content of Home 1 page...",
+  metaTitle: "Home 1 - StayEase",
+  metaDescription: "Welcome to StayEase Home 1 page description.",
+  status: "published",
 };
 
-const EditPageForm: React.FC<EditPageFormProps> = ({ 
-  pageId, 
-  onSave, 
-  onCancel, 
-  onDelete 
+const EditPageForm: React.FC<EditPageFormProps> = ({
+  pageId,
+  onSave,
+  onCancel,
+  onDelete,
 }) => {
   const [formData, setFormData] = useState(mockPageData);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Burada pageId'ye göre sayfa verisi yüklenebilir
+    // Here you can load page data based on pageId
     if (pageId) {
       setIsLoading(true);
-      // API çağrısı simülasyonu
+      // API call simulation
       setTimeout(() => {
         setFormData(mockPageData);
         setIsLoading(false);
@@ -49,20 +49,20 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
   }, [pageId]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
 
     // Auto-generate slug from name
-    if (field === 'name') {
+    if (field === "name") {
       const slug = value
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      setFormData(prev => ({
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      setFormData((prev) => ({
         ...prev,
-        slug
+        slug,
       }));
     }
   };
@@ -73,7 +73,7 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
   };
 
   const handleDelete = () => {
-    if (confirm('Bu sayfayı silmek istediğinizden emin misiniz?')) {
+    if (confirm("Bu sayfayı silmek istediğinizden emin misiniz?")) {
       onDelete?.(formData.id);
     }
   };
@@ -91,14 +91,16 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Başlık */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-1">
             Edit Page: {formData.name}
           </h1>
           <nav className="flex items-center space-x-2 text-sm text-gray-500">
-            <span className="hover:text-blue-600 cursor-pointer">Dashboard</span>
+            <span className="hover:text-blue-600 cursor-pointer">
+              Dashboard
+            </span>
             <span>›</span>
             <span className="hover:text-blue-600 cursor-pointer">Pages</span>
             <span>›</span>
@@ -106,16 +108,16 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
           </nav>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onCancel}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to List
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             className="flex items-center gap-2"
           >
@@ -127,18 +129,18 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Ana İçerik */}
+          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Page Information</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="name">Page Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     placeholder="Enter page name"
                     required
                   />
@@ -149,10 +151,12 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
                   <Input
                     id="slug"
                     value={formData.slug}
-                    onChange={(e) => handleInputChange('slug', e.target.value)}
+                    onChange={(e) => handleInputChange("slug", e.target.value)}
                     placeholder="page-slug"
                   />
-                  <p className="text-sm text-gray-500 mt-1">URL: /pages/{formData.slug}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    URL: /pages/{formData.slug}
+                  </p>
                 </div>
 
                 <div>
@@ -160,7 +164,9 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
                   <Textarea
                     id="content"
                     value={formData.content}
-                    onChange={(e) => handleInputChange('content', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("content", e.target.value)
+                    }
                     placeholder="Page content..."
                     rows={8}
                   />
@@ -171,14 +177,16 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
             {/* SEO Settings */}
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">SEO Settings</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="metaTitle">Meta Title</Label>
                   <Input
                     id="metaTitle"
                     value={formData.metaTitle}
-                    onChange={(e) => handleInputChange('metaTitle', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("metaTitle", e.target.value)
+                    }
                     placeholder="Meta title for SEO"
                   />
                 </div>
@@ -188,7 +196,9 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
                   <Textarea
                     id="metaDescription"
                     value={formData.metaDescription}
-                    onChange={(e) => handleInputChange('metaDescription', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("metaDescription", e.target.value)
+                    }
                     placeholder="Meta description for SEO"
                     rows={3}
                   />
@@ -197,7 +207,7 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
             </Card>
           </div>
 
-          {/* Yan Panel */}
+          {/* Side Panel */}
           <div className="space-y-6">
             {/* Page Info */}
             <Card className="p-6">
@@ -221,14 +231,16 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
             {/* Publish */}
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Publish</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="status">Status</Label>
                   <select
                     id="status"
                     value={formData.status}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("status", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="draft">Draft</option>
@@ -242,7 +254,9 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
                   <select
                     id="template"
                     value={formData.template}
-                    onChange={(e) => handleInputChange('template', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("template", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   >
                     <option value="default">Default</option>
@@ -258,21 +272,21 @@ const EditPageForm: React.FC<EditPageFormProps> = ({
             {/* Actions */}
             <Card className="p-6">
               <div className="space-y-3">
-                <Button 
+                <Button
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                 >
                   <Save className="h-4 w-4" />
                   Update Page
                 </Button>
-                
-                <Button 
+
+                <Button
                   type="button"
                   variant="outline"
                   className="w-full"
                   onClick={() => {
-                    setFormData(prev => ({ ...prev, status: 'draft' }));
-                    onSave?.({ ...formData, status: 'draft' });
+                    setFormData((prev) => ({ ...prev, status: "draft" }));
+                    onSave?.({ ...formData, status: "draft" });
                   }}
                 >
                   Save as Draft

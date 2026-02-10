@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { AddUserForm } from '@/components/admin/users';
-import { UserFormData } from '@/lib/schemas';
+import React from "react";
+import Link from "next/link";
+import { AddUserForm } from "@/components/admin/users";
+import { UserFormData } from "@/lib/schemas";
 
 export default function AddUserPage() {
   const handleUserSubmit = async (data: UserFormData) => {
-    // TODO: API çağrısı yapılacak
-    console.log('Kullanıcı oluşturuluyor:', data);
-    
-    // Simüle edilmiş API çağrısı
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    alert('Kullanıcı başarıyla oluşturuldu!');
+    // TODO: API call will be made here
+    console.log("Kullanıcı oluşturuluyor:", data);
+
+    // Simulated API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    alert("Kullanıcı başarıyla oluşturuldu!");
   };
 
   return (
@@ -21,15 +21,19 @@ export default function AddUserPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center text-sm text-gray-500 mb-4">
-          <Link href="/dashboard" className="hover:text-gray-700">Dashboard</Link>
+          <Link href="/dashboard" className="hover:text-gray-700">
+            Dashboard
+          </Link>
           <span className="mx-2">›</span>
-          <Link href="/users" className="hover:text-gray-700">User</Link>
+          <Link href="/users" className="hover:text-gray-700">
+            User
+          </Link>
           <span className="mx-2">›</span>
           <span className="text-gray-900">Add New User</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Add New User</h1>
       </div>
-      
+
       <AddUserForm onSubmit={handleUserSubmit} />
     </div>
   );

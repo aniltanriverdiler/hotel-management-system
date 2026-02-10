@@ -33,7 +33,7 @@ export interface HotelData {
     latitude: number;
     longitude: number;
   };
-  category?: 'hotel' | 'villa' | 'apartment' | 'room';
+  category?: "hotel" | "villa" | "apartment" | "room";
   stars?: number;
   facilities?: string[];
   roomTypes?: {

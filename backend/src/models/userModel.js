@@ -1,33 +1,31 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 class UserModel {
-  /**
-   * Yeni kullanıcı oluştur
-   */
+  // Create new user
   async createUser(userData) {
     try {
-      const { email, password, name, role = 'CUSTOMER' } = userData;
+      const { email, password, name, role = "CUSTOMER" } = userData;
 
-      // Email kontrolü
+      // Email validation
       const existingUser = await this.findUserByEmail(email);
       if (existingUser) {
-        throw new Error('Bu email zaten kullanılıyor');
+        throw new Error("Bu email zaten kullanılıyor");
       }
 
-      // Şifreyi hash'le
+      // Hash password
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      // Kullanıcıyı oluştur
+      // Create user
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
-          role
-        }
+          role,
+        },
       });
 
       return user;
@@ -36,9 +34,7 @@ class UserModel {
     }
   }
 
-  /**
-   * Email ile kullanıcı bul
-   */
+  // Find user by email
   async findUserByEmail(email) {
     try {
       return await prisma.user.findUnique({ where: { email } });
@@ -47,9 +43,7 @@ class UserModel {
     }
   }
 
-  /**
-   * ID ile kullanıcı bul
-   */
+  // Find user by id
   async findUserById(user_id) {
     try {
       return await prisma.user.findUnique({ where: { user_id } });
@@ -58,9 +52,7 @@ class UserModel {
     }
   }
 
-  /**
-   * Kullanıcı bilgilerini güncelle
-   */
+  // Update user information
   async updateUser(user_id, updateData) {
     try {
       if (updateData.password) {
@@ -69,16 +61,14 @@ class UserModel {
 
       return await prisma.user.update({
         where: { user_id },
-        data: updateData
+        data: updateData,
       });
     } catch (error) {
       throw error;
     }
   }
 
-  /**
-   * Kullanıcıyı sil
-   */
+  // Delete user
   async deleteUser(user_id) {
     try {
       return await prisma.user.delete({ where: { user_id } });
@@ -87,9 +77,7 @@ class UserModel {
     }
   }
 
-  /**
-   * Tüm kullanıcıları listele
-   */
+  // Get all users
   async getAllUsers() {
     try {
       return await prisma.user.findMany({
@@ -98,17 +86,15 @@ class UserModel {
           name: true,
           email: true,
           role: true,
-          created_at: true
-        }
+          created_at: true,
+        },
       });
     } catch (error) {
       throw error;
     }
   }
 
-  /**
-   * Rol bazında kullanıcıları listele
-   */
+  // Get users by role
   async getUsersByRole(role) {
     try {
       return await prisma.user.findMany({
@@ -118,17 +104,15 @@ class UserModel {
           name: true,
           email: true,
           role: true,
-          created_at: true
-        }
+          created_at: true,
+        },
       });
     } catch (error) {
       throw error;
     }
   }
 
-  /**
-   * Şifre doğrulama
-   */
+  // Verify password
   async verifyPassword(password, hashedPassword) {
     try {
       return await bcrypt.compare(password, hashedPassword);
@@ -137,9 +121,7 @@ class UserModel {
     }
   }
 
-  /**
-   * Kullanıcı sayısını getir
-   */
+  // Get user count
   async getUserCount() {
     try {
       return await prisma.user.count();
@@ -148,25 +130,23 @@ class UserModel {
     }
   }
 
-  /**
-   * Kullanıcı arama (name veya email ile)
-   */
+  // Search users by name or email
   async searchUsers(searchTerm) {
     try {
       return await prisma.user.findMany({
         where: {
           OR: [
-            { name: { contains: searchTerm, mode: 'insensitive' } },
-            { email: { contains: searchTerm, mode: 'insensitive' } }
-          ]
+            { name: { contains: searchTerm, mode: "insensitive" } },
+            { email: { contains: searchTerm, mode: "insensitive" } },
+          ],
         },
         select: {
           user_id: true,
           name: true,
           email: true,
           role: true,
-          created_at: true
-        }
+          created_at: true,
+        },
       });
     } catch (error) {
       throw error;

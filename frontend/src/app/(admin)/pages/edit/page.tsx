@@ -14,10 +14,10 @@ const EditPageContent: React.FC = () => {
     content: string;
     slug: string;
   }) => {
-    // Burada API çağrısı yapılabilir
+    // API call can be made here
     console.log("Updating page:", data);
 
-    // Başarılı güncelleme sonrası liste sayfasına yönlendir
+    // After successful update, redirect to list page
     router.push("/pages/list");
   };
 
@@ -26,10 +26,10 @@ const EditPageContent: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    // Burada API çağrısı yapılabilir
+    // API call can be made here
     console.log("Deleting page:", id);
 
-    // Başarılı silme sonrası liste sayfasına yönlendir
+    // After successful deletion, redirect to list page
     router.push("/pages/list");
   };
 

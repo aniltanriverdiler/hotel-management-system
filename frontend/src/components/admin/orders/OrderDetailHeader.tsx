@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,42 +11,42 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { ArrowLeft, Package } from 'lucide-react';
+} from "@/components/ui/breadcrumb";
+import { ArrowLeft, Package } from "lucide-react";
 
 interface OrderDetailHeaderProps {
   orderId: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: "confirmed" | "pending" | "cancelled";
 }
 
-const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({ 
-  orderId = '#7712309', 
-  status = 'confirmed' 
+const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({
+  orderId = "#7712309",
+  status = "confirmed",
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
+      case "confirmed":
         return (
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             className="bg-green-100 text-green-800 px-3 py-1 text-sm font-medium"
           >
             Onaylandı
           </Badge>
         );
-      case 'pending':
+      case "pending":
         return (
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             className="bg-yellow-100 text-yellow-800 px-3 py-1 text-sm font-medium"
           >
             Beklemede
           </Badge>
         );
-      case 'cancelled':
+      case "cancelled":
         return (
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             className="bg-red-100 text-red-800 px-3 py-1 text-sm font-medium"
           >
             İptal Edildi
@@ -54,8 +54,8 @@ const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({
         );
       default:
         return (
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             className="bg-gray-100 text-gray-800 px-3 py-1 text-sm font-medium"
           >
             Bilinmiyor
@@ -66,11 +66,11 @@ const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Geri Dön Butonu */}
+      {/* Back Button */}
       <div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           asChild
           className="text-gray-600 hover:text-gray-900 -ml-2"
         >
@@ -82,7 +82,7 @@ const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({
       </div>
 
       <div className="flex items-center justify-between">
-        {/* Sol taraf - Sayfa Başlığı ve Durum */}
+        {/* Left Side - Page Title and Status */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <Package className="h-8 w-8 text-blue-600" />
@@ -97,8 +97,8 @@ const OrderDetailHeader: React.FC<OrderDetailHeaderProps> = ({
           </div>
           {getStatusBadge(status)}
         </div>
-        
-        {/* Sağ taraf - Breadcrumb */}
+
+        {/* Right Side - Breadcrumb */}
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>

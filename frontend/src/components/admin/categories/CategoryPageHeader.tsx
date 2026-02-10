@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,15 +9,15 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from "@/components/ui/breadcrumb";
 
 const CategoryPageHeader: React.FC = () => {
   return (
     <div className="flex items-center justify-between">
-      {/* Sol taraf - Sayfa Başlığı */}
+      {/* Left side - Page Title */}
       <h1 className="text-2xl font-semibold text-gray-900">All category</h1>
-      
-      {/* Sağ taraf - Breadcrumb */}
+
+      {/* Right side - Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
