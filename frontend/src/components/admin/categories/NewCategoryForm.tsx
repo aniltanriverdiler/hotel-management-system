@@ -77,7 +77,6 @@ const NewCategoryForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    // API çağrısı yapılacak
   };
 
   const iconOptions = [

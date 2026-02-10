@@ -1,94 +1,86 @@
-import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-/**
- * JWT Token doğrulama middleware'i
- * Bu middleware, gelen isteklerde Authorization header'dan JWT token'ını alır ve doğrular
- */
+// Middleware to validate JWT from Authorization header
 const authenticateToken = async (req, res, next) => {
   try {
-    // Authorization header'dan token'ı al
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN" formatından token'ı çıkar
+    // Get token from Authorization header
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Extract token from "Bearer TOKEN" format
 
-    // Token yoksa hata döndür
+    // If token is not found, return error
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Erişim token\'ı bulunamadı. Lütfen giriş yapın.'
+        message: "Erişim token'ı bulunamadı. Lütfen giriş yapın.",
       });
     }
 
-    // JWT token'ını doğrula
+    // Validate JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Token'dan kullanıcı ID'sini al
+
+    // Get user ID from token
     const userId = decoded.user_id;
-    
-    // Kullanıcıyı veritabanından bul
+
+    // Find user in database
     const user = await prisma.user.findUnique({
-      where: {user_id: userId },
+      where: { user_id: userId },
       select: {
         user_id: true,
         email: true,
-        name: true,          
+        name: true,
         role: true,
-        created_at: true
-      }
+        created_at: true,
+      },
     });
 
-    // Kullanıcı bulunamadıysa hata döndür
+    // If user is not found, return error
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Geçersiz token. Kullanıcı bulunamadı.'
+        message: "Geçersiz token. Kullanıcı bulunamadı.",
       });
     }
 
-
-    // Kullanıcı bilgilerini request nesnesine ekle
+    // Add user information to request object
     req.user = user;
-    // Sonraki middleware'e geç
+    // Pass to next middleware
     next();
-
   } catch (error) {
-    // JWT doğrulama hatası
-    if (error.name === 'JsonWebTokenError') {
+    // JWT validation error
+    if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         success: false,
-        message: 'Geçersiz token. Lütfen tekrar giriş yapın.'
+        message: "Geçersiz token. Lütfen tekrar giriş yapın.",
       });
     }
 
-    // Token süresi dolmuş
-    if (error.name === 'TokenExpiredError') {
+    // Token expired
+    if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         success: false,
-        message: 'Token süresi dolmuş. Lütfen tekrar giriş yapın.'
+        message: "Token süresi dolmuş. Lütfen tekrar giriş yapın.",
       });
     }
 
-    // Diğer hatalar
-    console.error('Auth middleware hatası:', error);
+    // Other errors
+    console.error("Auth middleware hatası:", error);
     return res.status(500).json({
       success: false,
-      message: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.'
+      message: "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
     });
   }
 };
 
-/**
- * Opsiyonel JWT doğrulama middleware'i
- * Authorization header yoksa sessizce devam eder, varsa doğrular.
- */
+// Optional JWT authentication middleware: proceeds silently if no Authorization header, verifies if present.
 const authenticateTokenOptional = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers["authorization"];
     if (!authHeader) return next();
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
     if (!token) return next();
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -96,7 +88,13 @@ const authenticateTokenOptional = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { user_id: userId },
-      select: { user_id: true, email: true, name: true, role: true, created_at: true }
+      select: {
+        user_id: true,
+        email: true,
+        name: true,
+        role: true,
+        created_at: true,
+      },
     });
 
     if (user) {
@@ -104,30 +102,28 @@ const authenticateTokenOptional = async (req, res, next) => {
     }
     return next();
   } catch (_) {
-    // Opsiyonel olduğu için hatayı yükseltmeyip devam ediyoruz
+    // Optional, so we don't throw an error and continue
     return next();
   }
 };
 
-/**
- * Belirli roller için yetkilendirme middleware'i
- * @param {string[]} allowedRoles - Prisma enum değerleri: CUSTOMER, HOTEL_OWNER, SUPPORT
- */
+// Authorization middleware for specific roles
+// @param {string[]} allowedRoles - Prisma enum values: CUSTOMER, HOTEL_OWNER, SUPPORT
 const authorizeRoles = (allowedRoles) => {
   return (req, res, next) => {
-    // Önce authenticateToken middleware'ini çalıştır
+    // First run authenticateToken middleware
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'Yetkilendirme gerekli. Lütfen giriş yapın.'
+        message: "Yetkilendirme gerekli. Lütfen giriş yapın.",
       });
     }
 
-    // Kullanıcının rolü kontrol edilir
+    // Check user role
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Bu işlem için yetkiniz bulunmamaktadır.'
+        message: "Bu işlem için yetkiniz bulunmamaktadır.",
       });
     }
 
@@ -135,22 +131,20 @@ const authorizeRoles = (allowedRoles) => {
   };
 };
 
-/**
- * Sahiplik kontrolü
- * @param {string} resourceUserId - Erişilmek istenen kaynağın user_id'si
- */
+// Ownership control
+// @param {string} resourceUserId - The user_id of the resource being accessed
 const authorizeOwnResource = (resourceUserId, allowSupport = true) => {
   return (req, res, next) => {
-    // Opsiyonel: SUPPORT rolü tüm kaynaklara erişebilir
-    if (allowSupport && req.user.role === 'SUPPORT') {
+    // Optional: SUPPORT role can access all resources
+    if (allowSupport && req.user.role === "SUPPORT") {
       return next();
     }
 
-    // Normal kullanıcılar sadece kendi verilerine erişebilir
+    // Normal users can only access their own data
     if (Number(req.user.user_id) !== Number(resourceUserId)) {
       return res.status(403).json({
         success: false,
-        message: 'Bu kaynağa erişim yetkiniz bulunmamaktadır.'
+        message: "Bu kaynağa erişim yetkiniz bulunmamaktadır.",
       });
     }
 
@@ -158,4 +152,9 @@ const authorizeOwnResource = (resourceUserId, allowSupport = true) => {
   };
 };
 
-export { authenticateToken, authenticateTokenOptional, authorizeRoles, authorizeOwnResource };
+export {
+  authenticateToken,
+  authenticateTokenOptional,
+  authorizeRoles,
+  authorizeOwnResource,
+};

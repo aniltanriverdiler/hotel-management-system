@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-// Tüm kullanıcıları gösteren api (sadece support kullanıcılar)
+// Returns all users (only SUPPORT users)
 router.get(
   "/",
   authenticateToken,
@@ -33,13 +33,13 @@ router.get(
   }
 );
 
-// Kullanıcı profilini görüntüleme (kendi profilini veya support herkesi görebilir)
+// Returns the profile of a user (their own profile or SUPPORT users can see all profiles)
 router.get("/profile/:userId", authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
     const userIdInt = parseInt(userId, 10);
 
-    // Kendi profilini görüntüleme kontrolü
+    // Checks if the user is the owner of the profile or a SUPPORT user
     if (req.user.role !== "SUPPORT" && req.user.user_id !== userIdInt) {
       return res.status(403).json({
         success: false,
@@ -48,7 +48,7 @@ router.get("/profile/:userId", authenticateToken, async (req, res) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { user_id: Number(userId) },  
+      where: { user_id: Number(userId) },
       select: {
         user_id: true,
         name: true,
@@ -75,20 +75,24 @@ router.get("/profile/:userId", authenticateToken, async (req, res) => {
   }
 });
 /**
- * Kullanıcı profilini güncelleme
- * - CUSTOMER → sadece kendi profilini güncelleyebilir
- * - SUPPORT → herkesin profilini güncelleyebilir
+ * Updates the profile of a user
+ * - CUSTOMER → only the user can update their own profile
+ * - SUPPORT → all users can update their profiles
  */
 router.put(
   "/profile/:userId",
   authenticateToken,
   async (req, res, next) => {
     if (req.user.role === "SUPPORT") {
-      // SUPPORT herkesin profilini güncelleyebilir
+      // SUPPORT users can update all profiles
       return next();
     }
-    // Diğerleri sadece kendi profili için
-    return authorizeOwnResource(parseInt(req.params.userId, 10))(req, res, next);
+    // Other users can only update their own profile
+    return authorizeOwnResource(parseInt(req.params.userId, 10))(
+      req,
+      res,
+      next
+    );
   },
   async (req, res) => {
     try {
@@ -96,8 +100,6 @@ router.put(
       const { name, email } = req.body;
 
       const updatedUser = await prisma.user.update({
-
-
         where: { user_id: parseInt(userId, 10) },
         data: { name, email },
         select: {
@@ -122,16 +124,16 @@ router.put(
 );
 
 /**
- * Kullanıcı kaydı
- * - CUSTOMER → herkes serbestçe kayıt olabilir
- * - SUPPORT/HOTEL_OWNER → sadece SUPPORT rolündekiler kayıt edebilir
- * - Şifre bcrypt ile hashleniyor
+ * Creates a new user
+ * - CUSTOMER → all users can register freely
+ * - SUPPORT/HOTEL_OWNER → only SUPPORT users can register
+ * - Password is hashed with bcrypt
  */
-  router.post("/register", authenticateTokenOptional, async (req, res) => {
+router.post("/register", authenticateTokenOptional, async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // Email zaten kayıtlı mı kontrol et
+    // Checks if the email is already registered
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({
@@ -140,14 +142,14 @@ router.put(
       });
     }
 
-    // Şifreyi hashle
+    // Hashes the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Varsayılan rol CUSTOMER
+    // Default role is CUSTOMER
     let finalRole = "CUSTOMER";
 
     if (role && ["SUPPORT", "HOTEL_OWNER"].includes(role)) {
-      // SUPPORT kullanıcıları özel rol verebilir
+      // SUPPORT users can assign special roles
       if (!req.user || req.user.role !== "SUPPORT") {
         return res.status(403).json({
           success: false,
@@ -157,12 +159,12 @@ router.put(
       finalRole = role;
     }
 
-    // Yeni kullanıcıyı oluştur
+    // Creates a new user
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword, // ✅ hashlenmiş şifre
+        password: hashedPassword,
         role: finalRole,
       },
       select: {

@@ -1,5 +1,5 @@
-import prisma  from "../config/db.js";
+import prisma from "../config/db.js";
 
-// Chat ve ChatParticipant modellerini Prisma üzerinden direkt export ediyoruz
+// Export Chat and ChatParticipant models directly from Prisma
 export const Chat = prisma.chat;
 export const ChatParticipant = prisma.chatParticipant;

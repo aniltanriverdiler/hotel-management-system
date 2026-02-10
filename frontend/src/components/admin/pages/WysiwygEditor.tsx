@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  List, 
-  ListOrdered, 
-  Link, 
-  Image, 
-  AlignLeft, 
-  AlignCenter, 
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Link,
+  Image,
+  AlignLeft,
+  AlignCenter,
   AlignRight,
   Type,
-  Palette
-} from 'lucide-react';
+  Palette,
+} from "lucide-react";
 
 interface WysiwygEditorProps {
   value?: string;
@@ -24,10 +24,10 @@ interface WysiwygEditorProps {
   placeholder?: string;
 }
 
-const WysiwygEditor: React.FC<WysiwygEditorProps> = ({ 
-  value = '', 
-  onChange, 
-  placeholder = "İçeriğinizi buraya yazın..." 
+const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
+  value = "",
+  onChange,
+  placeholder = "İçeriğinizi buraya yazın...",
 }) => {
   const [content, setContent] = useState(value);
 
@@ -36,9 +36,13 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     onChange?.(newContent);
   };
 
-  const ToolbarButton = ({ icon: Icon, tooltip, onClick }: { 
-    icon: any; 
-    tooltip: string; 
+  const ToolbarButton = ({
+    icon: Icon,
+    tooltip,
+    onClick,
+  }: {
+    icon: any;
+    tooltip: string;
     onClick?: () => void;
   }) => (
     <Button
@@ -130,7 +134,9 @@ const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       {/* Status Bar */}
       <div className="border-t border-gray-200 px-4 py-2 bg-gray-50">
         <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>Words: {content.split(' ').filter(word => word.length > 0).length}</span>
+          <span>
+            Words: {content.split(" ").filter((word) => word.length > 0).length}
+          </span>
           <span>Path: /</span>
         </div>
       </div>

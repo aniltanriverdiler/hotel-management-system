@@ -54,7 +54,10 @@ export default function ProductImageCarousel({
       alt: `Görsel ${index + 1}`,
     }));
 
-    const base = mapped.length > 0 ? mapped : fallbackImages.map((f, i) => ({ id: i + 1, ...f }));
+    const base =
+      mapped.length > 0
+        ? mapped
+        : fallbackImages.map((f, i) => ({ id: i + 1, ...f }));
     const desired = 20;
     if (base.length === desired) return base;
     if (base.length > desired) return base.slice(0, desired);
@@ -62,7 +65,11 @@ export default function ProductImageCarousel({
     let fillerIndex = 0;
     while (result.length < desired) {
       const f = fallbackImages[fillerIndex % fallbackImages.length];
-      result.push({ id: result.length + 1, src: f.src, alt: `Görsel ${result.length + 1}` });
+      result.push({
+        id: result.length + 1,
+        src: f.src,
+        alt: `Görsel ${result.length + 1}`,
+      });
       fillerIndex += 1;
     }
     return result;
@@ -92,7 +99,7 @@ export default function ProductImageCarousel({
             className="object-cover transition-all duration-500"
             priority
           />
-          
+
           {/* Navigation Buttons */}
           <button
             onClick={handlePrevious}
@@ -100,7 +107,7 @@ export default function ProductImageCarousel({
           >
             <ChevronLeft className="w-6 h-6 text-gray-800" />
           </button>
-          
+
           <button
             onClick={handleNext}
             className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/95 hover:bg-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 z-10 backdrop-blur-sm cursor-pointer"
@@ -127,7 +134,10 @@ export default function ProductImageCarousel({
         >
           <CarouselContent className="-ml-2 py-2">
             {finalImages.map((image, index) => (
-              <CarouselItem key={image.id} className="pl-2 basis-1/5 sm:basis-1/6 md:basis-1/7 lg:basis-1/8 xl:basis-1/10">
+              <CarouselItem
+                key={image.id}
+                className="pl-2 basis-1/5 sm:basis-1/6 md:basis-1/7 lg:basis-1/8 xl:basis-1/10"
+              >
                 <button
                   onClick={() => handleThumbnailClick(index)}
                   className={cn(
@@ -147,14 +157,10 @@ export default function ProductImageCarousel({
               </CarouselItem>
             ))}
           </CarouselContent>
-          
+
           {/* Navigation buttons for thumbnails - positioned inside */}
-          <CarouselPrevious 
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 border-gray-300 hover:bg-gray-100 shadow-md disabled:opacity-50 bg-white/90 backdrop-blur-sm cursor-pointer" 
-          />
-          <CarouselNext 
-            className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 border-gray-300 hover:bg-gray-100 shadow-md disabled:opacity-50 bg-white/90 backdrop-blur-sm cursor-pointer" 
-          />
+          <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 border-gray-300 hover:bg-gray-100 shadow-md disabled:opacity-50 bg-white/90 backdrop-blur-sm cursor-pointer" />
+          <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 border-gray-300 hover:bg-gray-100 shadow-md disabled:opacity-50 bg-white/90 backdrop-blur-sm cursor-pointer" />
         </Carousel>
       </div>
     </div>

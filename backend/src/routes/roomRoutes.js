@@ -1,48 +1,65 @@
 import express from "express";
 import prisma from "../config/db.js";
-import { authenticateToken, authorizeRoles } from "../middlewares/authMiddleware.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-/**
- * Oda ekle (sadece otel sahibi kendi oteline veya SUPPORT)
- */
-router.post("/", authenticateToken, authorizeRoles(["HOTEL_OWNER", "SUPPORT"]), async (req, res) => {
-  try {
-    const { hotel_id, room_type, price, capacity, description, quantity = 1 } = req.body;
-    const { user_id, role } = req.user;
-
-    // Otel gerçekten var mı kontrol et
-    const hotel = await prisma.hotel.findUnique({ where: { hotel_id: Number(hotel_id) } });
-    if (!hotel) {
-      return res.status(404).json({ success: false, error: "Otel bulunamadı" });
-    }
-
-    // Eğer SUPPORT değilse, sadece kendi oteline oda ekleyebilir
-    if (role !== "SUPPORT" && hotel.owner_id !== user_id) {
-      return res.status(403).json({ success: false, error: "Bu otele oda ekleme yetkiniz yok" });
-    }
-
-    const room = await prisma.room.create({
-      data: {
-        hotel_id: Number(hotel_id),
+// Creates a new room for a hotel
+router.post(
+  "/",
+  authenticateToken,
+  authorizeRoles(["HOTEL_OWNER", "SUPPORT"]),
+  async (req, res) => {
+    try {
+      const {
+        hotel_id,
         room_type,
-        price: Number(price),
-        capacity: Number(capacity),
+        price,
+        capacity,
         description,
-        quantity: Number(quantity),
-      },
-    });
+        quantity = 1,
+      } = req.body;
+      const { user_id, role } = req.user;
 
-    res.status(201).json({ success: true, data: room });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+      // Check if the hotel exists
+      const hotel = await prisma.hotel.findUnique({
+        where: { hotel_id: Number(hotel_id) },
+      });
+      if (!hotel) {
+        return res
+          .status(404)
+          .json({ success: false, error: "Otel bulunamadı" });
+      }
+
+      // If the user is not SUPPORT, they can only add rooms to their own hotel
+      if (role !== "SUPPORT" && hotel.owner_id !== user_id) {
+        return res
+          .status(403)
+          .json({ success: false, error: "Bu otele oda ekleme yetkiniz yok" });
+      }
+
+      const room = await prisma.room.create({
+        data: {
+          hotel_id: Number(hotel_id),
+          room_type,
+          price: Number(price),
+          capacity: Number(capacity),
+          description,
+          quantity: Number(quantity),
+        },
+      });
+
+      res.status(201).json({ success: true, data: room });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
   }
-});
+);
 
-/**
- * Belirli otelin odalarını listele
- */
+// Returns the rooms of a hotel
 router.get("/hotel/:hotelId", async (req, res) => {
   try {
     const { hotelId } = req.params;
@@ -62,9 +79,7 @@ router.get("/hotel/:hotelId", async (req, res) => {
   }
 });
 
-/**
- * Oda güncelle (sadece otel sahibi veya SUPPORT)
- */
+// Updates a room
 router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -81,7 +96,9 @@ router.put("/:id", authenticateToken, async (req, res) => {
     }
 
     if (role !== "SUPPORT" && room.hotel.owner_id !== user_id) {
-      return res.status(403).json({ success: false, error: "Bu odayı güncelleme yetkiniz yok" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Bu odayı güncelleme yetkiniz yok" });
     }
 
     const updatedRoom = await prisma.room.update({
@@ -101,9 +118,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-/**
- * Oda sil (sadece otel sahibi veya SUPPORT, aktif rezervasyonu yoksa)
- */
+// Deletes a room
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -119,10 +134,12 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     }
 
     if (role !== "SUPPORT" && room.hotel.owner_id !== user_id) {
-      return res.status(403).json({ success: false, error: "Bu odayı silme yetkiniz yok" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Bu odayı silme yetkiniz yok" });
     }
 
-    // Aktif rezervasyon kontrolü
+    // Checks for active reservations
     const activeReservations = await prisma.reservation.count({
       where: {
         room_id: Number(id),
@@ -131,7 +148,12 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     });
 
     if (activeReservations > 0) {
-      return res.status(400).json({ success: false, error: "Aktif rezervasyonu olan oda silinemez" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Aktif rezervasyonu olan oda silinemez",
+        });
     }
 
     await prisma.room.delete({ where: { room_id: Number(id) } });

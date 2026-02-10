@@ -1,14 +1,26 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Plus, Upload, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Upload, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CategoryFormData {
   name: string;
@@ -20,30 +32,30 @@ interface CategoryFormData {
 const CategoryForm: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
-    name: '',
-    icon: '',
+    name: "",
+    icon: "",
     isActive: true,
-    parentCategory: ''
+    parentCategory: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    // API çağrısı yapılacak
+    console.log("Form data:", formData);
+    // API call will be made here
     setIsDialogOpen(false);
-    // Formu temizle
+    // Clear form
     setFormData({
-      name: '',
-      icon: '',
+      name: "",
+      icon: "",
       isActive: true,
-      parentCategory: ''
+      parentCategory: "",
     });
   };
 
   const handleInputChange = (field: keyof CategoryFormData, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -56,12 +68,12 @@ const CategoryForm: React.FC = () => {
             Add new
           </Button>
         </DialogTrigger>
-        
+
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add New Category</DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Category Name */}
             <div className="space-y-2">
@@ -70,7 +82,7 @@ const CategoryForm: React.FC = () => {
                 id="categoryName"
                 placeholder="Enter category name"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 required
               />
             </div>
@@ -78,9 +90,11 @@ const CategoryForm: React.FC = () => {
             {/* Parent Category */}
             <div className="space-y-2">
               <Label htmlFor="parentCategory">Parent Category</Label>
-              <Select 
-                value={formData.parentCategory} 
-                onValueChange={(value) => handleInputChange('parentCategory', value)}
+              <Select
+                value={formData.parentCategory}
+                onValueChange={(value) =>
+                  handleInputChange("parentCategory", value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select parent category" />
@@ -102,7 +116,9 @@ const CategoryForm: React.FC = () => {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Click to upload icon</p>
+                    <p className="text-sm text-gray-600">
+                      Click to upload icon
+                    </p>
                     <Input
                       type="file"
                       accept="image/*"
@@ -110,7 +126,7 @@ const CategoryForm: React.FC = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          handleInputChange('icon', file.name);
+                          handleInputChange("icon", file.name);
                         }
                       }}
                     />
@@ -125,21 +141,23 @@ const CategoryForm: React.FC = () => {
               <Switch
                 id="isActive"
                 checked={formData.isActive}
-                onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+                onCheckedChange={(checked) =>
+                  handleInputChange("isActive", checked)
+                }
               />
             </div>
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="bg-blue-600 hover:bg-blue-700"
                 disabled={!formData.name.trim()}
               >

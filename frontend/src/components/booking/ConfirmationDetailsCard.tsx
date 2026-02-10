@@ -14,7 +14,7 @@ function ConfirmationDetailsCard() {
 
             {/* Check-in and Check-out Dates */}
             <div className="flex items-start gap-12 mb-8">
-              {/* Giriş */}
+              {/* Check-in */}
               <div>
                 <div className="text-base font-semibold text-gray-900 mb-2">
                   Giriş

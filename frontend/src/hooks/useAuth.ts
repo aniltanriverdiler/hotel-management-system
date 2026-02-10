@@ -105,7 +105,10 @@ export const useLogin = () => {
       try {
         return await originalMutate(data);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Giriş yapılırken bir hata oluştu";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Giriş yapılırken bir hata oluştu";
         toast.error(errorMessage, { duration: 6000 });
         throw error;
       }
@@ -156,7 +159,10 @@ export const useRegister = () => {
       try {
         return await originalMutate(data);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Kayıt olurken bir hata oluştu";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Kayıt olurken bir hata oluştu";
         toast.error(errorMessage);
         throw error;
       }
@@ -172,8 +178,7 @@ export const useLogout = () => {
   const mutation = useMutation<void, unknown>(async () => {
     try {
       await authAPI.logout();
-    } catch (_) {
-    }
+    } catch (_) {}
     toast.success("Başarıyla çıkış yapıldı!");
   });
 

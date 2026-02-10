@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import NewCategoryPageHeader from '@/components/admin/categories/NewCategoryPageHeader';
-import NewCategoryForm from '@/components/admin/categories/NewCategoryForm';
+import React from "react";
+import NewCategoryPageHeader from "@/components/admin/categories/NewCategoryPageHeader";
+import NewCategoryForm from "@/components/admin/categories/NewCategoryForm";
 
 const NewCategoryPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50/30">
       <div className="p-6 max-w-4xl mx-auto space-y-6">
-        {/* Sayfa Başlığı ve Breadcrumb */}
+        {/* Page Title and Breadcrumb */}
         <NewCategoryPageHeader />
-        
-        {/* Yeni Kategori Formu */}
+
+        {/* New Category Form */}
         <NewCategoryForm />
       </div>
     </div>

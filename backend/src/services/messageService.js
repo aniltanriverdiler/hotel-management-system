@@ -1,37 +1,41 @@
 import prisma from "../config/db.js";
 
 /**
- * Mesaj kaydet
+ * Save message
  * @param {Object} param0
- * @param {number|string} param0.chatId - Mesajın ait olduğu chat ID
- * @param {number|string} param0.senderId - Mesajı gönderen kullanıcı ID
- * @param {string} param0.text - Mesaj içeriği
- * @returns {Promise<Object>} Kaydedilen mesaj objesi
+ * @param {number|string} param0.chatId - Chat ID the message belongs to
+ * @param {number|string} param0.senderId - ID of the user who sends the message
+ * @param {string} param0.text - Message content
+ * @returns {Promise<Object>} Saved message object
  */
 export const saveMessage = async ({ chatId, senderId, text }) => {
-  // Tip güvenliği ve boş mesaj kontrolü
+  // Type safety and empty message check
   chatId = Number(chatId);
   senderId = Number(senderId);
   text = text?.trim();
 
   if (isNaN(chatId)) {
-    throw new Error("Geçersiz chatId. Lütfen geçerli bir sohbet ID'si sağlayın.");
+    throw new Error(
+      "Geçersiz chatId. Lütfen geçerli bir sohbet ID'si sağlayın."
+    );
   }
   if (isNaN(senderId)) {
-    throw new Error("Geçersiz senderId. Lütfen geçerli bir kullanıcı ID'si sağlayın.");
+    throw new Error(
+      "Geçersiz senderId. Lütfen geçerli bir kullanıcı ID'si sağlayın."
+    );
   }
   if (!text) {
     throw new Error("Mesaj içeriği boş olamaz. Lütfen bir mesaj girin.");
   }
 
-  // Gönderen kullanıcıyı bul ve rolünü al
+  // Find the sender user and get their role
   const sender = await prisma.user.findUnique({
     where: { user_id: senderId },
     select: { role: true, name: true },
   });
   if (!sender) throw new Error("Gönderen kullanıcı bulunamadı");
 
-  // Mesajı oluştur
+  // Create the message
   const msg = await prisma.message.create({
     data: {
       chat_id: chatId,
@@ -49,22 +53,29 @@ export const saveMessage = async ({ chatId, senderId, text }) => {
 };
 
 /**
- * Chat mesajlarını getir (ASC)
- * @param {number|string} chatId - Mesajların ait olduğu chat ID
+ * Get chat messages (ASC)
+ * @param {number|string} chatId - Chat ID the messages belong to
  * @param {Object} options
- * @param {number} options.take - Kaç mesaj alınacak (varsayılan: 100)
- * @param {number|string} options.cursor - Cursor ile sayfalama yapılacaksa mesaj ID
- * @returns {Promise<Object[]>} Mesaj listesi
+ * @param {number} options.take - How many messages will be fetched (default: 100)
+ * @param {number|string} options.cursor - Message ID for cursor-based pagination
+ * @returns {Promise<Object[]>} Message list
  */
-export const getMessagesByChatId = async (chatId, { take = 100, cursor } = {}) => {
+export const getMessagesByChatId = async (
+  chatId,
+  { take = 100, cursor } = {}
+) => {
   chatId = Number(chatId);
-  cursor = cursor ? Number(cursor) : undefined; 
-  
+  cursor = cursor ? Number(cursor) : undefined;
+
   if (isNaN(chatId)) {
-    throw new Error("Geçersiz chatId. Lütfen geçerli bir sohbet ID'si sağlayın.");
+    throw new Error(
+      "Geçersiz chatId. Lütfen geçerli bir sohbet ID'si sağlayın."
+    );
   }
   if (cursor && isNaN(cursor)) {
-    throw new Error("Geçersiz cursor. Lütfen geçerli bir mesaj ID'si sağlayın.");
+    throw new Error(
+      "Geçersiz cursor. Lütfen geçerli bir mesaj ID'si sağlayın."
+    );
   }
   return prisma.message.findMany({
     where: { chat_id: chatId },

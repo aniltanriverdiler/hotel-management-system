@@ -1,193 +1,193 @@
-# JWT Middleware - Basit Açıklama
+# JWT Middleware - Simple Explanation
 
-## 🎯 JWT Nedir ve Neden Kullanırız?
+## 🎯 What is JWT and Why Do We Use It?
 
-**JWT (JSON Web Token)**, kullanıcıların kimlik doğrulamasını sağlayan bir sistemdir. 
+**JWT (JSON Web Token)** is a system that provides user authentication. 
 
-**Basit Örnek:**
-- Kullanıcı giriş yapar (email + şifre)
-- Sunucu "giriş başarılı" der ve bir JWT token verir
-- Bu token, kullanıcının kimlik kartı gibidir
-- Kullanıcı her istekte bu token'ı gösterir
-- Sunucu token'ı kontrol eder ve "evet, bu kullanıcı gerçekten giriş yapmış" der
+**Simple Example:**
+- The user logs in (email + password)
+- The server says "login successful" and returns a JWT token
+- This token is like the user's ID card
+- The user presents this token with every request
+- The server checks the token and says "yes, this user is really logged in"
 
-**Gerçek Hayat Benzetmesi:**
-- Otel girişinde kimlik kartı alırsınız
-- Bu kartla otel içinde istediğiniz yere gidebilirsiniz
-- Kart olmadan otel içinde dolaşamazsınız
-- JWT token = Otel kimlik kartı
+**Real Life Analogy:**
+- You receive an ID card at the hotel entrance
+- With this card, you can go wherever you are allowed inside the hotel
+- You cannot walk around the hotel without the card
+- JWT token = Hotel ID card
 
-## 🚀 Kurulum (Basit Adımlar)
+## 🚀 Setup (Simple Steps)
 
-### 1. .env Dosyası Oluşturun
+### 1. Create a .env File
 
-Backend klasöründe `.env` adında bir dosya oluşturun ve içine şunları yazın:
+Create a file named `.env` in the backend folder and write the following into it:
 
 ```env
-JWT_SECRET=gizli_anahtar_buraya_yazin
-DATABASE_URL="postgresql://kullanici:sifre@localhost:5432/otel_db"
+JWT_SECRET=write_your_secret_key_here
+DATABASE_URL="postgresql://user:password@localhost:5432/hotel_db"
 PORT=3001
 ```
 
-**Önemli:** `JWT_SECRET` kısmına gerçek bir gizli anahtar yazın (örnek: `abc123xyz789`)
+**Important:** Put a real secret key in `JWT_SECRET` (example: `abc123xyz789`)
 
-### 2. Paketler Zaten Yüklü ✅
+### 2. Required Packages Are Already Installed ✅
 
-Gerekli paketler zaten yüklü, ekstra bir şey yapmanıza gerek yok.
+The required packages are already installed; you do not need to do anything extra.
 
-## 🔐 Middleware Fonksiyonları (Ne İşe Yarar?)
+## 🔐 Middleware Functions (What Do They Do?)
 
-### 1. `authenticateToken` - Kimlik Kartı Kontrolü
+### 1. `authenticateToken` - ID Card Check
 
-Bu fonksiyon, gelen istekte JWT token'ını kontrol eder.
+This function checks the JWT token in the incoming request.
 
-**Ne Yapar?**
-- Gelen istekte "Authorization" başlığında token var mı bakar
-- Token varsa, bu token'ın geçerli olup olmadığını kontrol eder
-- Token geçerliyse, kullanıcı bilgilerini `req.user`'a ekler
-- Token yoksa veya geçersizse, "giriş yapın" hatası verir
+**What Does It Do?**
+- Checks whether there is a token in the "Authorization" header of the incoming request
+- If there is a token, it verifies whether the token is valid
+- If the token is valid, it adds user information to `req.user`
+- If there is no token or it is invalid, it returns an error like "please log in"
 
-**Basit Kullanım:**
+**Basic Usage:**
 ```javascript
 import { authenticateToken } from '../middlewares/authMiddleware.js';
 
-// Bu route'a sadece giriş yapmış kullanıcılar erişebilir
+// Only logged-in users can access this route
 router.get('/profilim', authenticateToken, (req, res) => {
-  // req.user kullanıcı bilgilerini içerir
+  // req.user contains user information
   res.json({ 
-    mesaj: 'Hoş geldiniz!', 
-    kullanici: req.user 
+    message: 'Welcome!', 
+    user: req.user 
   });
 });
 ```
 
-### 2. `authorizeRoles` - Yetki Kontrolü
+### 2. `authorizeRoles` - Role/Authorization Check
 
-Bu fonksiyon, kullanıcının hangi role sahip olduğunu kontrol eder.
+This function checks which role the user has.
 
-**Ne Yapar?**
-- Kullanıcının rolünü kontrol eder (ADMIN, HOTEL_OWNER, USER gibi)
-- Sadece belirtilen rollere sahip kullanıcıların erişimine izin verir
-- Yetkisiz kullanıcılar için "yetkiniz yok" hatası verir
+**What Does It Do?**
+- Checks the user's role (such as ADMIN, HOTEL_OWNER, USER)
+- Allows access only to users with the specified roles
+- Returns a "you are not authorized" error for unauthorized users
 
-**Basit Kullanım:**
+**Basic Usage:**
 ```javascript
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
-// Sadece ADMIN rolündeki kullanıcılar erişebilir
+// Only users with the ADMIN role can access
 router.get('/admin-panel', authenticateToken, authorizeRoles(['ADMIN']), (req, res) => {
-  res.json({ mesaj: 'Admin paneline hoş geldiniz!' });
+  res.json({ message: 'Welcome to the admin panel!' });
 });
 
-// ADMIN veya HOTEL_OWNER rolündeki kullanıcılar erişebilir
+// Users with ADMIN or HOTEL_OWNER roles can access
 router.get('/otel-yonetimi', authenticateToken, authorizeRoles(['ADMIN', 'HOTEL_OWNER']), (req, res) => {
-  res.json({ mesaj: 'Otel yönetim paneline hoş geldiniz!' });
+  res.json({ message: 'Welcome to the hotel management panel!' });
 });
 ```
 
-### 3. `authorizeOwnResource` - Kendi Verilerine Erişim
+### 3. `authorizeOwnResource` - Access to Own Data
 
-Bu fonksiyon, kullanıcıların sadece kendi verilerine erişmesini sağlar.
+This function ensures that users can access only their own data.
 
-**Ne Yapar?**
-- Kullanıcının sadece kendi verilerine erişmesine izin verir
-- Başka kullanıcıların verilerine erişimi engeller
-- Admin kullanıcılar herkese erişebilir
+**What Does It Do?**
+- Allows the user to access only their own data
+- Prevents access to other users' data
+- Admin users can access everyone's data
 
-**Basit Kullanım:**
+**Basic Usage:**
 ```javascript
 import { authenticateToken, authorizeOwnResource } from '../middlewares/authMiddleware.js';
 
-// Kullanıcı sadece kendi profilini güncelleyebilir
+// The user can update only their own profile
 router.put('/profilim/:userId', authenticateToken, authorizeOwnResource(req.params.userId), (req, res) => {
-  // Profil güncelleme işlemi
-  res.json({ mesaj: 'Profil güncellendi!' });
+  // Profile update operation
+  res.json({ message: 'Profile updated!' });
 });
 ```
 
-## 📝 Pratik Örnekler
+## 📝 Practical Examples
 
-### Örnek 1: Kullanıcı Profili
+### Example 1: User Profile
 
 ```javascript
-// Kullanıcı kendi profilini görüntüleyebilir
+// The user can view their own profile
 router.get('/profilim', authenticateToken, (req, res) => {
   res.json({ 
-    mesaj: 'Profil bilgileriniz', 
-    kullanici: req.user 
+    message: 'Your profile information', 
+    user: req.user 
   });
 });
 
-// Admin tüm kullanıcıları görebilir
+// Admin can see all users
 router.get('/tum-kullanicilar', authenticateToken, authorizeRoles(['ADMIN']), async (req, res) => {
-  const kullanicilar = await prisma.user.findMany();
-  res.json({ kullanicilar });
+  const users = await prisma.user.findMany();
+  res.json({ users });
 });
 ```
 
-### Örnek 2: Otel Yönetimi
+### Example 2: Hotel Management
 
 ```javascript
-// Otel sahibi otel oluşturabilir
+// A hotel owner can create a hotel
 router.post('/otel-ekle', authenticateToken, authorizeRoles(['HOTEL_OWNER']), async (req, res) => {
-  // Otel oluşturma işlemi
-  res.json({ mesaj: 'Otel başarıyla eklendi!' });
+  // Hotel creation operation
+  res.json({ message: 'Hotel added successfully!' });
 });
 
-// Kullanıcı sadece kendi rezervasyonlarını görebilir
+// The user can see only their own reservations
 router.get('/rezervasyonlarim/:userId', authenticateToken, authorizeOwnResource(req.params.userId), async (req, res) => {
-  // Kendi rezervasyonlarını listele
-  res.json({ mesaj: 'Rezervasyonlarınız' });
+  // List their own reservations
+  res.json({ message: 'Your reservations' });
 });
 ```
 
-## ❌ Hata Mesajları
+## ❌ Error Messages
 
-Middleware şu hataları Türkçe olarak döndürür:
+The middleware returns the following errors (currently in Turkish in the implementation):
 
 - **401 Unauthorized**: "Erişim token'ı bulunamadı. Lütfen giriş yapın."
 - **403 Forbidden**: "Bu işlem için yetkiniz bulunmamaktadır."
 - **500 Internal Server Error**: "Sunucu hatası. Lütfen daha sonra tekrar deneyin."
 
-## 🔒 Güvenlik Önerileri
+## 🔒 Security Recommendations
 
-1. **JWT_SECRET**: Güçlü ve benzersiz bir secret key kullanın
-2. **HTTPS**: Production ortamında mutlaka HTTPS kullanın
-3. **Token Süresi**: Token'ların süresini makul tutun (örn: 24 saat)
+1. **JWT_SECRET**: Use a strong and unique secret key
+2. **HTTPS**: Always use HTTPS in production
+3. **Token Expiration**: Keep token lifetimes reasonable (e.g., 24 hours)
 
-## 🧪 Test Etme
+## 🧪 Testing
 
-### Postman ile Test
+### Testing with Postman
 
-1. **Login endpoint'inden token alın**
-2. **Authorization header'ına "Bearer TOKEN" ekleyin**
-3. **Protected route'ları test edin**
+1. **Get a token from the login endpoint**
+2. **Add "Bearer TOKEN" to the Authorization header**
+3. **Test protected routes**
 
-### cURL ile Test
+### Testing with cURL
 
 ```bash
-# Token ile istek gönderme
+# Sending a request with a token
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
      http://localhost:3001/api/users/profile/123
 ```
 
-## ❓ Sık Sorulan Sorular
+## ❓ Frequently Asked Questions
 
-**Q: Middleware'i nasıl kullanırım?**
-A: Route'larınızda import edip, route tanımından önce yazın.
+**Q: How do I use the middleware?**  
+A: Import it in your routes and place it before the route handler in the definition.
 
-**Q: Birden fazla middleware kullanabilir miyim?**
-A: Evet! Sırayla yazabilirsiniz: `authenticateToken, authorizeRoles(['ADMIN'])`
+**Q: Can I use more than one middleware?**  
+A: Yes! You can chain them in order: `authenticateToken, authorizeRoles(['ADMIN'])`
 
-**Q: Hata alıyorum, ne yapmalıyım?**
-A: `.env` dosyasında `JWT_SECRET` tanımladığınızdan emin olun.
+**Q: I am getting an error, what should I do?**  
+A: Make sure that you have defined `JWT_SECRET` in the `.env` file.
 
-## 📚 Özet
+## 📚 Summary
 
-JWT middleware 3 ana işlevi yerine getirir:
+The JWT middleware provides 3 main functions:
 
-1. **authenticateToken** → Kullanıcı giriş yapmış mı?
-2. **authorizeRoles** → Kullanıcının yetkisi var mı?
-3. **authorizeOwnResource** → Kullanıcı kendi verisine mi erişiyor?
+1. **authenticateToken** → Has the user logged in?
+2. **authorizeRoles** → Does the user have the required authorization/role?
+3. **authorizeOwnResource** → Is the user accessing their own data?
 
-Bu 3 fonksiyonu kullanarak güvenli API'ler oluşturabilirsiniz! 🎉
+By using these 3 functions, you can build secure APIs! 🎉

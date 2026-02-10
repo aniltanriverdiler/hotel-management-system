@@ -1,24 +1,20 @@
 import express from "express";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
-import { 
-  startDirectChat, 
-  verifyParticipation, 
-  getCounterparts 
+import {
+  startDirectChat,
+  verifyParticipation,
+  getCounterparts,
 } from "../controllers/chatController.js";
 
 const router = express.Router();
 
-// 1-1 chat başlatır veya mevcut olanı döner
-// POST /api/chats/start
+// Starts a 1-on-1 chat or returns an existing one
 router.post("/start", authenticateToken, startDirectChat);
 
-// Kullanıcı chat katılımcısı mı kontrolü
-// GET /api/chats/:chatId/verify
+// Checks if the user is a participant of the specified chat
 router.get("/:chatId/verify", authenticateToken, verifyParticipation);
 
-// Chattaki diğer katılımcıların id'lerini döndürür
-// GET /api/chats/:chatId/counterparts
+// Returns the other participants of a chat
 router.get("/:chatId/counterparts", authenticateToken, getCounterparts);
 
 export default router;
-

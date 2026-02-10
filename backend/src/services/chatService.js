@@ -1,11 +1,11 @@
- import  prisma  from "../config/db.js";
+import prisma from "../config/db.js";
 
 /**
- * İki kullanıcı arasında 1-1 chat bulur veya oluşturur.
- * 3 rol (CUSTOMER, HOTEL_OWNER, SUPPORT) fark etmeksizin çalışır.
- * Aynı ikili için tekrar chat açmaz (varsa döner).
- * @param {number} userIdA 
- * @param {number} userIdB 
+ * Finds or creates a 1-1 chat between two users.
+ * Works regardless of the 3 roles (CUSTOMER, HOTEL_OWNER, SUPPORT).
+ * Does not create another chat for the same pair (returns existing if found).
+ * @param {number} userIdA
+ * @param {number} userIdB
  * @returns {Promise<Object>} chat
  */
 export const findOrCreateDirectChat = async (userIdA, userIdB) => {
@@ -13,7 +13,7 @@ export const findOrCreateDirectChat = async (userIdA, userIdB) => {
     throw new Error("Kendinizle sohbet başlatamazsınız");
   }
 
-  //  Önce bu iki kullanıcının katılımcı olduğu bir chat var mı kontrol et
+  //  First check whether there is a chat where both users are participants
   const existing = await prisma.chat.findFirst({
     where: {
       AND: [
@@ -26,24 +26,26 @@ export const findOrCreateDirectChat = async (userIdA, userIdB) => {
 
   if (existing) return existing;
 
-  //  Yoksa kullanıcıları DB'den çek
+  //  Otherwise, fetch the users from the DB
   const [userA, userB] = await Promise.all([
-    prisma.user.findUnique({ where: { user_id: userIdA }, select: { user_id: true, role: true } }),
-    prisma.user.findUnique({ where: { user_id: userIdB }, select: { user_id: true, role: true } }),
+    prisma.user.findUnique({
+      where: { user_id: userIdA },
+      select: { user_id: true, role: true },
+    }),
+    prisma.user.findUnique({
+      where: { user_id: userIdB },
+      select: { user_id: true, role: true },
+    }),
   ]);
 
-    if (!userA) throw new Error(`Kullanıcı bulunamadı: ID ${userIdA}`);
+  if (!userA) throw new Error(`Kullanıcı bulunamadı: ID ${userIdA}`);
   if (!userB) throw new Error(`Kullanıcı bulunamadı: ID ${userIdB}`);
 
-
-  //  Chat oluştur ve katılımcıları ekle
+  //  Create the chat and add participants
   const chat = await prisma.chat.create({
     data: {
       participants: {
-        create: [
-          { user_id: userA.user_id },
-          { user_id: userB.user_id },
-        ],
+        create: [{ user_id: userA.user_id }, { user_id: userB.user_id }],
       },
     },
     select: { chat_id: true },
@@ -53,14 +55,16 @@ export const findOrCreateDirectChat = async (userIdA, userIdB) => {
 };
 
 /**
- * Kullanıcı chat katılımcısı mı kontrolü
- * @param {number} userId 
- * @param {number} chatId 
+ * Checks whether the user is a chat participant.
+ * @param {number} userId
+ * @param {number} chatId
  * @returns {Promise<boolean>}
  */
 export const isUserParticipantOfChat = async (userId, chatId) => {
   if (Number.isNaN(userId) || Number.isNaN(chatId)) {
-    throw new Error("Geçersiz kullanıcı veya sohbet ID'si. Lütfen geçerli bir ID sağlayın.");
+    throw new Error(
+      "Geçersiz kullanıcı veya sohbet ID'si. Lütfen geçerli bir ID sağlayın."
+    );
   }
 
   const count = await prisma.chatParticipant.count({
@@ -71,14 +75,16 @@ export const isUserParticipantOfChat = async (userId, chatId) => {
 };
 
 /**
- * Bir chattaki "diğer" katılımcıların id'lerini döndürür
- * @param {number} chatId 
- * @param {number} requesterId 
+ * Returns the IDs of the "other" participants in a chat.
+ * @param {number} chatId
+ * @param {number} requesterId
  * @returns {Promise<number[]>}
  */
 export const getCounterpartIds = async (chatId, requesterId) => {
   if (Number.isNaN(chatId) || Number.isNaN(requesterId)) {
-    throw new Error("Geçersiz sohbet veya kullanıcı ID'si. Lütfen geçerli bir ID sağlayın.");
+    throw new Error(
+      "Geçersiz sohbet veya kullanıcı ID'si. Lütfen geçerli bir ID sağlayın."
+    );
   }
 
   const parts = await prisma.chatParticipant.findMany({
@@ -86,5 +92,7 @@ export const getCounterpartIds = async (chatId, requesterId) => {
     select: { user_id: true },
   });
 
-  return parts.map(p => p.user_id).filter(id => String(id) !== String(requesterId));
+  return parts
+    .map((p) => p.user_id)
+    .filter((id) => String(id) !== String(requesterId));
 };

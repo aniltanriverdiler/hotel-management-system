@@ -1,14 +1,29 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Upload, X, Star, Wifi, Car, Utensils, Dumbbell, Waves } from 'lucide-react';
+import React, { useState } from "react";
+import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDown,
+  Upload,
+  X,
+  Star,
+  Wifi,
+  Car,
+  Utensils,
+  Dumbbell,
+  Waves,
+} from "lucide-react";
 
 interface AddHotelFormProps {
   onSubmit: (data: FormData) => void;
@@ -33,77 +48,97 @@ interface FormData {
 
 const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    hotelName: '',
-    location: '',
-    city: '',
-    country: '',
+    hotelName: "",
+    location: "",
+    city: "",
+    country: "",
     stars: 3,
-    price: '',
-    description: '',
-    checkIn: '14:00',
-    checkOut: '11:00',
-    totalRooms: '',
+    price: "",
+    description: "",
+    checkIn: "14:00",
+    checkOut: "11:00",
+    totalRooms: "",
     amenities: [] as string[],
     roomTypes: [] as string[],
-    images: [] as File[]
+    images: [] as File[],
   });
 
-  const [selectedCity, setSelectedCity] = useState('Choose city');
-  const [selectedCountry, setSelectedCountry] = useState('Choose country');
+  const [selectedCity, setSelectedCity] = useState("Choose city");
+  const [selectedCountry, setSelectedCountry] = useState("Choose country");
 
-  const cities = ['Istanbul', 'Ankara', 'Izmir', 'Antalya', 'Bursa', 'Adana', 'Gaziantep', 'Konya'];
-  const countries = ['Turkey', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Belgium', 'Switzerland'];
+  const cities = [
+    "Istanbul",
+    "Ankara",
+    "Izmir",
+    "Antalya",
+    "Bursa",
+    "Adana",
+    "Gaziantep",
+    "Konya",
+  ];
+  const countries = [
+    "Turkey",
+    "Germany",
+    "France",
+    "Italy",
+    "Spain",
+    "Netherlands",
+    "Belgium",
+    "Switzerland",
+  ];
   const amenities = [
-    { id: 'wifi', label: 'WiFi', icon: Wifi },
-    { id: 'parking', label: 'Free Parking', icon: Car },
-    { id: 'restaurant', label: 'Restaurant', icon: Utensils },
-    { id: 'gym', label: 'Fitness Center', icon: Dumbbell },
-    { id: 'pool', label: 'Swimming Pool', icon: Waves },
-    { id: 'spa', label: 'Spa & Wellness' },
-    { id: 'concierge', label: '24/7 Concierge' },
-    { id: 'airport', label: 'Airport Shuttle' }
+    { id: "wifi", label: "WiFi", icon: Wifi },
+    { id: "parking", label: "Free Parking", icon: Car },
+    { id: "restaurant", label: "Restaurant", icon: Utensils },
+    { id: "gym", label: "Fitness Center", icon: Dumbbell },
+    { id: "pool", label: "Swimming Pool", icon: Waves },
+    { id: "spa", label: "Spa & Wellness" },
+    { id: "concierge", label: "24/7 Concierge" },
+    { id: "airport", label: "Airport Shuttle" },
   ];
   const roomTypes = [
-    'Standard Room',
-    'Deluxe Room', 
-    'Suite',
-    'Family Room',
-    'Executive Room',
-    'Presidential Suite'
+    "Standard Room",
+    "Deluxe Room",
+    "Suite",
+    "Family Room",
+    "Executive Room",
+    "Presidential Suite",
   ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const toggleAmenity = (amenityId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       amenities: prev.amenities.includes(amenityId)
-        ? prev.amenities.filter(a => a !== amenityId)
-        : [...prev.amenities, amenityId]
+        ? prev.amenities.filter((a) => a !== amenityId)
+        : [...prev.amenities, amenityId],
     }));
   };
 
   const toggleRoomType = (roomType: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       roomTypes: prev.roomTypes.includes(roomType)
-        ? prev.roomTypes.filter(r => r !== roomType)
-        : [...prev.roomTypes, roomType]
+        ? prev.roomTypes.filter((r) => r !== roomType)
+        : [...prev.roomTypes, roomType],
     }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, ...newImages]
+        images: [...prev.images, ...newImages],
       }));
     }
   };
@@ -126,22 +161,22 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
     if (imageFiles.length > 0) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, ...imageFiles]
+        images: [...prev.images, ...imageFiles],
       }));
     }
   };
 
   const removeImage = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
@@ -153,13 +188,16 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Sol Kolon - Otel Bilgileri */}
+        {/* Left Column - Hotel Information */}
         <div className="space-y-6">
           {/* Hotel Name */}
           <Card>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <Label htmlFor="hotelName" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="hotelName"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Hotel Name *
                 </Label>
                 <Input
@@ -182,7 +220,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <Label htmlFor="location" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="location"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Address *
                 </Label>
                 <Input
@@ -205,10 +246,15 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">City *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    City *
+                  </Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                      >
                         {selectedCity}
                         <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -231,10 +277,15 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">Country *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Country *
+                  </Label>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                      >
                         {selectedCountry}
                         <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -260,28 +311,35 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium text-gray-700">Star Rating *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Star Rating *
+                  </Label>
                   <div className="flex items-center space-x-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, stars: star }))}
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, stars: star }))
+                        }
                         className={`p-1 rounded hover:scale-110 transition-all duration-200 ${
-                          formData.stars >= star 
-                            ? 'text-yellow-400 hover:text-yellow-500' 
-                            : 'text-gray-300 hover:text-gray-400'
+                          formData.stars >= star
+                            ? "text-yellow-400 hover:text-yellow-500"
+                            : "text-gray-300 hover:text-gray-400"
                         }`}
                       >
-                        <Star 
+                        <Star
                           className={`h-6 w-6 ${
-                            formData.stars >= star ? 'fill-yellow-400' : 'fill-none'
-                          }`} 
+                            formData.stars >= star
+                              ? "fill-yellow-400"
+                              : "fill-none"
+                          }`}
                         />
                       </button>
                     ))}
                     <span className="ml-2 text-sm font-medium text-gray-600">
-                      ({formData.stars} {formData.stars === 1 ? 'yıldız' : 'yıldız'})
+                      ({formData.stars}{" "}
+                      {formData.stars === 1 ? "yıldız" : "yıldız"})
                     </span>
                   </div>
                   <p className="text-xs text-gray-500">
@@ -294,11 +352,16 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label htmlFor="price" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="price"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Starting Price *
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₺</span>
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      ₺
+                    </span>
                     <Input
                       id="price"
                       name="price"
@@ -323,7 +386,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label htmlFor="checkIn" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="checkIn"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Check-in Time
                   </Label>
                   <Input
@@ -341,7 +407,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-3">
-                  <Label htmlFor="checkOut" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="checkOut"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Check-out Time
                   </Label>
                   <Input
@@ -361,7 +430,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <Label htmlFor="totalRooms" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="totalRooms"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Total Rooms *
                 </Label>
                 <Input
@@ -385,7 +457,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Hotel Description *
                 </Label>
                 <Textarea
@@ -406,17 +481,19 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           </Card>
         </div>
 
-        {/* Sağ Kolon - Medya, Özellikler ve Oda Tipleri */}
+        {/* Right Column - Media, Features and Room Types */}
         <div className="space-y-6">
           {/* Upload Images */}
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-gray-700">Hotel Images</Label>
-                
+                <Label className="text-sm font-medium text-gray-700">
+                  Hotel Images
+                </Label>
+
                 {/* Image Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                  {/* Mevcut görseller */}
+                  {/* Existing images */}
                   {formData.images.slice(0, 4).map((image, index) => (
                     <div key={index} className="relative">
                       <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
@@ -437,19 +514,28 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
                       </button>
                     </div>
                   ))}
-                  
-                  {/* Boş placeholder'lar */}
-                  {Array.from({ length: Math.max(0, 4 - formData.images.length) }).map((_, index) => (
-                    <div key={`placeholder-${index}`} className="w-full h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                      <span className="text-gray-400 text-sm">Image {formData.images.length + index + 1}</span>
+
+                  {/* Empty placeholders */}
+                  {Array.from({
+                    length: Math.max(0, 4 - formData.images.length),
+                  }).map((_, index) => (
+                    <div
+                      key={`placeholder-${index}`}
+                      className="w-full h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+                    >
+                      <span className="text-gray-400 text-sm">
+                        Image {formData.images.length + index + 1}
+                      </span>
                     </div>
                   ))}
                 </div>
 
                 {/* Upload Area */}
-                <div 
+                <div
                   className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer"
-                  onClick={() => document.getElementById('image-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById("image-upload")?.click()
+                  }
                   onDragOver={handleDragOver}
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
@@ -467,13 +553,13 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
                     className="hidden"
                     id="image-upload"
                   />
-                  <Button 
+                  <Button
                     type="button"
-                    variant="outline" 
+                    variant="outline"
                     className="cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      document.getElementById('image-upload')?.click();
+                      document.getElementById("image-upload")?.click();
                     }}
                   >
                     Select Images
@@ -481,7 +567,8 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
                 </div>
 
                 <p className="text-xs text-gray-500">
-                  En az 4 görsel ekleyin. Otel dış cephesi, lobi, oda ve özelliklerin görsellerini ekleyin.
+                  En az 4 görsel ekleyin. Otel dış cephesi, lobi, oda ve
+                  özelliklerin görsellerini ekleyin.
                 </p>
               </div>
             </CardContent>
@@ -491,8 +578,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-gray-700">Hotel Amenities</Label>
-                
+                <Label className="text-sm font-medium text-gray-700">
+                  Hotel Amenities
+                </Label>
+
                 <div className="grid grid-cols-2 gap-3">
                   {amenities.map((amenity) => {
                     const IconComponent = amenity.icon;
@@ -503,12 +592,14 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
                         onClick={() => toggleAmenity(amenity.id)}
                         className={`flex items-center space-x-2 p-3 rounded-lg border transition-colors ${
                           formData.amenities.includes(amenity.id)
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
                         {IconComponent && <IconComponent className="h-4 w-4" />}
-                        <span className="text-sm font-medium">{amenity.label}</span>
+                        <span className="text-sm font-medium">
+                          {amenity.label}
+                        </span>
                       </button>
                     );
                   })}
@@ -521,8 +612,10 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-gray-700">Available Room Types</Label>
-                
+                <Label className="text-sm font-medium text-gray-700">
+                  Available Room Types
+                </Label>
+
                 <div className="space-y-2">
                   {roomTypes.map((roomType) => (
                     <button
@@ -531,8 +624,8 @@ const AddHotelForm: React.FC<AddHotelFormProps> = ({ onSubmit, onCancel }) => {
                       onClick={() => toggleRoomType(roomType)}
                       className={`w-full text-left p-3 rounded-lg border transition-colors ${
                         formData.roomTypes.includes(roomType)
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <div className="flex items-center justify-between">

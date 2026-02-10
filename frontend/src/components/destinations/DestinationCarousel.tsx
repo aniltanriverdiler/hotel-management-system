@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
+} from "@/components/ui/carousel";
 
 // Destination data with image paths and city names
 const destinations = [
@@ -17,50 +17,50 @@ const destinations = [
     id: 1,
     name: "Paris",
     image: "/images/paris.png",
-    link: "/destinations/paris"
+    link: "/destinations/paris",
   },
   {
     id: 2,
     name: "Marakeş",
-    image: "/images/marakes.png", 
-    link: "/destinations/marakeş"
+    image: "/images/marakes.png",
+    link: "/destinations/marakeş",
   },
   {
     id: 3,
     name: "Roma",
     image: "/images/roma.png",
-    link: "/destinations/roma"
+    link: "/destinations/roma",
   },
   {
     id: 4,
     name: "İzmir",
     image: "/images/izmir.png",
-    link: "/destinations/izmir"
+    link: "/destinations/izmir",
   },
   {
     id: 5,
     name: "Barselona",
     image: "/images/barselona.png",
-    link: "/destinations/barselona"
+    link: "/destinations/barselona",
   },
   {
     id: 6,
     name: "Antalya",
     image: "/images/antalya.png",
-    link: "/destinations/antalya"
-  }
-]
+    link: "/destinations/antalya",
+  },
+];
 
 // Repeat destinations multiple times for smooth infinite scrolling
 const repeatedDestinations = [
   ...destinations,
   ...destinations,
   ...destinations,
-  ...destinations
+  ...destinations,
 ].map((destination, index) => ({
   ...destination,
-  id: `${destination.id}-${index + 1}`
-}))
+  id: `${destination.id}-${index + 1}`,
+}));
 
 function DestinationCarousel() {
   return (
@@ -76,7 +76,10 @@ function DestinationCarousel() {
       >
         <CarouselContent className="-ml-8">
           {repeatedDestinations.map((destination) => (
-            <CarouselItem key={destination.id} className="pl-8 basis-auto flex-shrink-0">
+            <CarouselItem
+              key={destination.id}
+              className="pl-8 basis-auto flex-shrink-0"
+            >
               <Link href={destination.link} className="block group">
                 <div className="relative">
                   {/* Destination Image - already has oval shape */}
@@ -89,7 +92,7 @@ function DestinationCarousel() {
                       className="transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  
+
                   {/* City Name below the image */}
                   <div className="mt-4 text-center">
                     <h3 className="text-gray-800 font-semibold text-base">
@@ -101,13 +104,13 @@ function DestinationCarousel() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        
+
         {/* Navigation Buttons */}
         <CarouselPrevious className="left-8 bg-white/90 hover:bg-white text-gray-800 border-gray-200 hover:border-gray-300 shadow-lg" />
         <CarouselNext className="right-8 bg-white/90 hover:bg-white text-gray-800 border-gray-200 hover:border-gray-300 shadow-lg" />
       </Carousel>
     </div>
-  )
+  );
 }
 
 export default DestinationCarousel;
