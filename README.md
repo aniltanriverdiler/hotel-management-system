@@ -7,8 +7,9 @@ The application provides **hotel search & filtering, booking, reviews, dashboard
 
 ## 🚀 Live Demo & Source Code
 
-> Live deployment can be configured with platforms like **Vercel (frontend)** and **Railway/Render (backend)**.
-
+- 🌍 **Live Demo:**  
+  [`https://stayease-hotel-management-system.vercel.app/`](https://stayease-hotel-management-system.vercel.app/)
+  
 - 💻 **GitHub Repository (this project):**  
   [`https://github.com/aniltanriverdiler/hotel-management-system`](https://github.com/aniltanriverdiler/hotel-management-system)
 
@@ -106,7 +107,7 @@ hotel-management-system/
 │  └─ next.config.mjs
 │
 ├─ package.json             # Root config (can also be used as workspace root)
-├─ pnpm-lock.yaml / package-lock.json
+├─ package-lock.json
 └─ README.md                # You are here
 ```
 
@@ -119,7 +120,7 @@ You can run backend and frontend separately during development.
 ### 1️⃣ Prerequisites
 
 - **Node.js** (LTS recommended)
-- **pnpm** or **npm**  
+- **npm**
 - **PostgreSQL** database instance
 
 ### 2️⃣ Clone the Repository
@@ -135,18 +136,18 @@ cd hotel-management-system
 cd backend
 
 # Install dependencies
-pnpm install        # or: npm install
+npm install
 
 # Configure environment
 cp .env.example .env   # if available, otherwise create .env manually
 # Edit .env with your DB connection string, JWT secrets, Cloudinary, etc.
 
 # Run Prisma migrations & generate client
-pnpm prisma migrate dev
-pnpm prisma generate
+npx prisma migrate dev
+npx prisma generate
 
 # Start development server
-pnpm dev              # or: npm run dev
+npm run dev
 ```
 
 Backend will typically run on `http://localhost:3001` (check `server.js` / `.env`).
@@ -159,10 +160,10 @@ Open a new terminal:
 cd frontend
 
 # Install dependencies
-pnpm install        # or: npm install
+npm install
 
 # Start Next.js dev server
-pnpm dev            # or: npm run dev
+npm run dev
 ```
 
 Frontend will typically run on `http://localhost:3000` (check `package.json` / Next config).
@@ -192,7 +193,7 @@ Make sure the **backend API URL** and **Socket.IO URL** configured in the fronte
 - ☁ **Cloudinary** (optional) – For image uploads (hotel photos, avatars).
 
 ### Tooling & Dev Experience
-- 📦 **pnpm / npm** – Package management.
+- 📦 **npm** – Package management.
 - 🧹 **ESLint & Prettier** (optional, recommended) – Code quality and formatting.
 
 ---
